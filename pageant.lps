@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <Version Value="12"/>
+    <BuildModes Active="Debug"/>
+    <Units Count="22">
+      <Unit0>
+        <Filename Value="pageant.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="3"/>
+        <CursorPos X="26" Y="18"/>
+        <UsageCount Value="72"/>
+        <Loaded Value="True"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="umain.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="Form1"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="154"/>
+        <CursorPos X="31" Y="166"/>
+        <UsageCount Value="72"/>
+        <Bookmarks Count="2">
+          <Item0 Y="353" ID="5"/>
+          <Item1 X="17" Y="401" ID="6"/>
+        </Bookmarks>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="ucustompackagemanager.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="207"/>
+        <CursorPos X="30" Y="219"/>
+        <UsageCount Value="72"/>
+        <Bookmarks Count="2">
+          <Item0 X="20" Y="75" ID="1"/>
+          <Item1 Y="218"/>
+        </Bookmarks>
+        <Loaded Value="True"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="uaskpassword.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="fmSudoPassword"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="uAskPassword"/>
+        <EditorIndex Value="-1"/>
+        <WindowIndex Value="-1"/>
+        <TopLine Value="-1"/>
+        <CursorPos X="-1" Y="-1"/>
+        <UsageCount Value="20"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="components/VirtualTreeViewV5/Source/uaskpassword.pas"/>
+        <ComponentName Value="fmSudoPassword"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="uAskPassword"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="40" Y="14"/>
+        <UsageCount Value="24"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="/usr/lib/fpc/src/rtl/objpas/fgl.pp"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="242"/>
+        <CursorPos X="3" Y="244"/>
+        <UsageCount Value="6"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="/usr/lib/fpc/src/rtl/objpas/sysutils/syshelph.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="38"/>
+        <CursorPos X="44" Y="55"/>
+        <UsageCount Value="6"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="/usr/lib/fpc/src/rtl/objpas/classes/classesh.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="684"/>
+        <CursorPos X="14" Y="700"/>
+        <UsageCount Value="6"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="/usr/lib/lazarus/lcl/interfaces/qt5/qtwidgets.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="5700"/>
+        <CursorPos Y="5717"/>
+        <UsageCount Value="6"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="/usr/lib/lazarus/lcl/include/control.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="2897"/>
+        <CursorPos Y="2915"/>
+        <UsageCount Value="7"/>
+      </Unit9>
+      <Unit10>
+        <Filename Value="/usr/lib/lazarus/components/virtualtreeview/VirtualTrees.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="3074"/>
+        <CursorPos X="14" Y="3087"/>
+        <UsageCount Value="7"/>
+      </Unit10>
+      <Unit11>
+        <Filename Value="../../../devtools/lazstable/lazarus/components/virtualtreeview/VirtualTrees.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="2982"/>
+        <CursorPos X="14" Y="2996"/>
+        <UsageCount Value="7"/>
+      </Unit11>
+      <Unit12>
+        <Filename Value="/usr/local/fpc/fpc-3.2.2/packages/fcl-json/src/fpjsontopas.pp"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="13"/>
+        <UsageCount Value="29"/>
+      </Unit12>
+      <Unit13>
+        <Filename Value="/usr/local/lazarus-main/lcl/include/control.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="3592"/>
+        <CursorPos Y="3605"/>
+        <UsageCount Value="14"/>
+      </Unit13>
+      <Unit14>
+        <Filename Value="../../../.lazarus/onlinepackagemanager/packages/VirtualTreeView V5/Source/VirtualTrees.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="26006"/>
+        <CursorPos Y="26019"/>
+        <UsageCount Value="10"/>
+      </Unit14>
+      <Unit15>
+        <Filename Value="/usr/local/fpc/fpc-3.2.2/packages/fcl-process/src/processbody.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="172"/>
+        <CursorPos X="10" Y="184"/>
+        <UsageCount Value="14"/>
+      </Unit15>
+      <Unit16>
+        <Filename Value="/usr/local/fpc/fpc-3.2.2/packages/fcl-json/src/fpjson.pp"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="725"/>
+        <CursorPos X="18" Y="731"/>
+        <UsageCount Value="10"/>
+      </Unit16>
+      <Unit17>
+        <Filename Value="/usr/local/lazarus-main/lcl/graphics.pp"/>
+        <UnitName Value="Graphics"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="585"/>
+        <CursorPos X="14" Y="595"/>
+        <UsageCount Value="12"/>
+      </Unit17>
+      <Unit18>
+        <Filename Value="components/VirtualTreeViewV5/Source/VirtualTrees.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="3414"/>
+        <CursorPos X="3" Y="3426"/>
+        <UsageCount Value="10"/>
+      </Unit18>
+      <Unit19>
+        <Filename Value="/usr/local/fpc/3.2.2/rtl/inc/systemh.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="98"/>
+        <CursorPos X="3" Y="109"/>
+        <UsageCount Value="10"/>
+      </Unit19>
+      <Unit20>
+        <Filename Value="components/VirtualTreeViewV5/Source/VTGraphics.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="8"/>
+        <CursorPos X="22" Y="24"/>
+        <UsageCount Value="10"/>
+      </Unit20>
+      <Unit21>
+        <Filename Value="/usr/local/fpc/3.2.2/packages/fcl-process/src/processbody.inc"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="172"/>
+        <CursorPos Y="182"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit21>
+    </Units>
+    <JumpHistory Count="30" HistoryIndex="29">
+      <Position1>
+        <Filename Value="umain.pas"/>
+        <Caret Line="354" Column="17" TopLine="339"/>
+      </Position1>
+      <Position2>
+        <Filename Value="umain.pas"/>
+        <Caret Line="354" Column="17" TopLine="339"/>
+      </Position2>
+      <Position3>
+        <Filename Value="umain.pas"/>
+        <Caret Line="412" Column="37" TopLine="401"/>
+      </Position3>
+      <Position4>
+        <Filename Value="ucustompackagemanager.pas"/>
+        <Caret Line="242" Column="45" TopLine="232"/>
+      </Position4>
+      <Position5>
+        <Filename Value="ucustompackagemanager.pas"/>
+        <Caret Line="242" Column="45" TopLine="232"/>
+      </Position5>
+      <Position6>
+        <Filename Value="umain.pas"/>
+        <Caret Line="72" Column="29" TopLine="62"/>
+      </Position6>
+      <Position7>
+        <Filename Value="umain.pas"/>
+        <Caret Line="248" Column="3" TopLine="244"/>
+      </Position7>
+      <Position8>
+        <Filename Value="umain.pas"/>
+        <Caret Line="72" Column="15" TopLine="62"/>
+      </Position8>
+      <Position9>
+        <Filename Value="umain.pas"/>
+        <Caret Line="353" Column="33" TopLine="339"/>
+      </Position9>
+      <Position10>
+        <Filename Value="umain.pas"/>
+        <Caret Line="412" Column="37" TopLine="401"/>
+      </Position10>
+      <Position11>
+        <Filename Value="umain.pas"/>
+        <Caret Line="349" Column="35" TopLine="339"/>
+      </Position11>
+      <Position12>
+        <Filename Value="umain.pas"/>
+        <Caret Line="412" Column="37" TopLine="401"/>
+      </Position12>
+      <Position13>
+        <Filename Value="umain.pas"/>
+        <Caret Line="352" Column="33" TopLine="362"/>
+      </Position13>
+      <Position14>
+        <Filename Value="umain.pas"/>
+        <Caret Line="78" Column="29" TopLine="67"/>
+      </Position14>
+      <Position15>
+        <Filename Value="umain.pas"/>
+        <Caret Line="77" Column="19" TopLine="68"/>
+      </Position15>
+      <Position16>
+        <Filename Value="umain.pas"/>
+        <Caret Line="73" Column="8" TopLine="68"/>
+      </Position16>
+      <Position17>
+        <Filename Value="umain.pas"/>
+      </Position17>
+      <Position18>
+        <Filename Value="ucustompackagemanager.pas"/>
+        <Caret Line="83" Column="7" TopLine="79"/>
+      </Position18>
+      <Position19>
+        <Filename Value="ucustompackagemanager.pas"/>
+        <Caret Line="94" Column="8" TopLine="79"/>
+      </Position19>
+      <Position20>
+        <Filename Value="ucustompackagemanager.pas"/>
+        <Caret Line="46" Column="23" TopLine="33"/>
+      </Position20>
+      <Position21>
+        <Filename Value="ucustompackagemanager.pas"/>
+        <Caret Line="169" TopLine="162"/>
+      </Position21>
+      <Position22>
+        <Filename Value="umain.pas"/>
+        <Caret Line="128" Column="3" TopLine="114"/>
+      </Position22>
+      <Position23>
+        <Filename Value="umain.pas"/>
+        <Caret Line="542" Column="62" TopLine="533"/>
+      </Position23>
+      <Position24>
+        <Filename Value="umain.pas"/>
+        <Caret Line="590" Column="8" TopLine="573"/>
+      </Position24>
+      <Position25>
+        <Filename Value="umain.pas"/>
+        <Caret Line="101" Column="25" TopLine="87"/>
+      </Position25>
+      <Position26>
+        <Filename Value="umain.pas"/>
+        <Caret Line="596" Column="3" TopLine="578"/>
+      </Position26>
+      <Position27>
+        <Filename Value="umain.pas"/>
+        <Caret Line="123" TopLine="110"/>
+      </Position27>
+      <Position28>
+        <Filename Value="ucustompackagemanager.pas"/>
+        <Caret Line="219" Column="7" TopLine="207"/>
+      </Position28>
+      <Position29>
+        <Filename Value="umain.pas"/>
+        <Caret Line="123" TopLine="110"/>
+      </Position29>
+      <Position30>
+        <Filename Value="ucustompackagemanager.pas"/>
+        <Caret Line="219" Column="30" TopLine="207"/>
+      </Position30>
+    </JumpHistory>
+    <RunParams>
+      <FormatVersion Value="2"/>
+      <Modes ActiveMode=""/>
+    </RunParams>
+  </ProjectSession>
+  <Debugging>
+    <BreakPoints>
+      <Item>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="umain.pas"/>
+        <Line Value="354"/>
+      </Item>
+    </BreakPoints>
+  </Debugging>
+</CONFIG>

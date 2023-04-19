@@ -1,8 +1,10 @@
 DESTDIR ?=
 UBINDIR ?= /usr/bin
+LAZBUILD_OPTS ?= --lazarusdir=/usr/share/lazarus/ --build-mode=Release
+
 .PHONY: build install
 build:
-	lazbuild --build-mode=Release pageant.lpi
+	lazbuild $(LAZBUILD_OPTS_OPTS) pageant.lpi
 
 install: build
 	install -d $(DESTDIR)/$(UBINDIR)

@@ -1,0 +1,5 @@
+*.swp
+*.swo
+pageant
+components/VirtualTreeViewV5/Source/lib/
+lib/

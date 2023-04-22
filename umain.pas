@@ -1,12 +1,11 @@
 unit umain;
 
 {$MODE DELPHI}
-
 interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls,
-  ComCtrls, Buttons, ActnList, VirtualTrees, SynEdit,
+  ComCtrls, Buttons, ActnList, Menus, VirtualTrees, SynEdit,
   synhighlighterunixshellscript
   // ,VirtualStringTree
   , fpjson
@@ -18,11 +17,13 @@ type
   TViewMode = (vmList, vmTree);
 
 
-  { TForm1 }
+  { TfmMain }
 
-  TForm1 = class(TForm)
+  TfmMain = class(TForm)
     acCheckUpdates: TAction;
     acSearchPackages: TAction;
+    acInspectPackage: TAction;
+    acHistoryCopyItem: TAction;
     ActionList1: TActionList;
     BitBtn1: TBitBtn;
     Button1: TButton;
@@ -32,30 +33,39 @@ type
     cbSearchInstalled: TCheckBox;
     cbSearchLocation: TComboBox;
     edTextToSearch: TEdit;
+    Image1: TImage;
     images: TImageList;
-    Label1: TLabel;
     Label2: TLabel;
     Label5: TLabel;
+    Label6: TLabel;
+    lbSystemKernelName: TStaticText;
     lbViewAsList: TLabel;
     Label4: TLabel;
     lbViewAsTree: TLabel;
+    lboxHistory: TListBox;
     Memo1: TMemo;
+    MenuItem1: TMenuItem;
+    miHistoryCopy: TMenuItem;
     PageControl1: TPageControl;
     Panel1: TPanel;
     Panel2: TPanel;
     pnSearchOtions: TPanel;
     pnBody: TPanel;
     pnMacroMenu: TPanel;
-    pnNerdPanel: TPanel;
+    pnHistory: TPanel;
+    pmItems: TPopupMenu;
+    pmHistory: TPopupMenu;
     Splitter1: TSplitter;
+    lbSystemHostName: TStaticText;
     StatusBar1: TStatusBar;
     tsDebug: TTabSheet;
     tsHome: TTabSheet;
     SynUNIXShellScriptSyn1: TSynUNIXShellScriptSyn;
     TrayIcon1: TTrayIcon;
-    txShell: TSynEdit;
     vst: TVirtualStringTree;
     procedure acCheckUpdatesExecute(Sender: TObject);
+    procedure acHistoryCopyItemExecute(Sender: TObject);
+    procedure acInspectPackageExecute(Sender: TObject);
     procedure acSearchPackagesExecute(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
@@ -63,8 +73,10 @@ type
     procedure Button4Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure Image1Click(Sender: TObject);
     procedure Label4Click(Sender: TObject);
     procedure Label5Click(Sender: TObject);
+    procedure Label6Click(Sender: TObject);
     procedure lbViewAsListClick(Sender: TObject);
     procedure lbViewAsTreeClick(Sender: TObject);
     procedure lbViewAsTreeMouseEnter(Sender: TObject);
@@ -78,7 +90,6 @@ type
       Column: TColumnIndex; TextType: TVSTTextType; var CellText: String);
   private
     FPackages: TJSONArray;
-    FSudoPassword: string;
     FViewMode: TViewMode;
     procedure SetStatusPanel_FormStatus(AValue: string);
     procedure SetStatusPanel_ItemsCount(AValue: integer);
@@ -91,10 +102,10 @@ type
 
   private
     property Packages: TJSONArray read FPackages write FPackages;
-    property SudoPassword: string read FSudoPassword write FSudoPassword;
     property ViewMode: TViewMode read FViewMode write SetViewMode;
   public
      procedure SearchPackages(const AValueToSearch: string);
+     procedure InspectPackage(const APackageName: string);
      {$IFDEF DEBUG_INCLUDE_TEST}
      procedure CheckUpdates;
      {$ENDIF}
@@ -106,17 +117,17 @@ type
   end;
 
 var
-  Form1: TForm1;
+  fmMain: TfmMain;
 
 implementation
 
 {$R *.lfm}
 
-uses ucustompackagemanager, uAskPassword;
+uses ucustompackagemanager, upackagedetails_fm, utypes, uabout_fm, Clipbrd;
 
-{ TForm1 }
+{ TfmMain }
 
-procedure TForm1.Button1Click(Sender: TObject);
+procedure TfmMain.Button1Click(Sender: TObject);
 begin
   {$IFDEF DEBUG_INCLUDE_TEST}
   // memo1.Clear;
@@ -124,22 +135,39 @@ begin
   {$ENDIF}
 end;
 
-procedure TForm1.acCheckUpdatesExecute(Sender: TObject);
+procedure TfmMain.acCheckUpdatesExecute(Sender: TObject);
 begin
 {$IFDEF DEBUG_INCLUDE_TEST}
-  StatusPanel_FormStatus:='Searching for updates...';
-  SendNerdPanel( TCustomPackageManager.Test_CheckUpdates_PreviewCommand );
-  try
-    StatusPanel_ItemsCount:=-1;
-    StatusPanel_SumOf_Size:=-1;
-    CheckUpdates;
-  finally
-    StatusPanel_FormStatus:='Ready';
-  end;
+  // StatusPanel_FormStatus:='Searching for updates...';
+  // SendHistoryPanel( TCustomPackageManager.Test_CheckUpdates_PreviewCommand );
+  // try
+  //   StatusPanel_ItemsCount:=-1;
+  //   StatusPanel_SumOf_Size:=-1;
+  //   CheckUpdates;
+  // finally
+  //   StatusPanel_FormStatus:='Ready';
+  // end;
 {$ENDIF}
 end;
 
-procedure TForm1.acSearchPackagesExecute(Sender: TObject);
+procedure TfmMain.acHistoryCopyItemExecute(Sender: TObject);
+begin
+  Clipboard.AsText:=lboxHistory.Items[lboxHistory.ItemIndex];
+  showmessage(Clipboard.AsText);
+end;
+
+procedure TfmMain.acInspectPackageExecute(Sender: TObject);
+var Data: PPackageItemData;
+begin
+  if not Assigned(VST.FocusedNode) then
+     Exit;
+
+  // case view as list
+  Data := VST.GetNodeData(VST.FocusedNode);
+  InspectPackage(Data^.PackageName);
+end;
+
+procedure TfmMain.acSearchPackagesExecute(Sender: TObject);
 begin
   StatusPanel_FormStatus:='Searching packages...';
   try
@@ -153,7 +181,7 @@ begin
   end;
 end;
 
-procedure TForm1.Button2Click(Sender: TObject);
+procedure TfmMain.Button2Click(Sender: TObject);
 var
   Data: PPackageItemData;
   XNode: PVirtualNode;
@@ -163,8 +191,8 @@ begin
   Rand := Random(99);
   XNode := VST.AddChild(nil);
 
-  if VST.AbsoluteIndex(XNode) > -1 then
-  begin
+  // if VST.AbsoluteIndex(XNode) > -1 then
+  if Assigned(XNode) then begin
     Data := VST.GetNodeData(Xnode);
     Data^.PackageName := 'One ' + IntToStr(Rand);
     Data^.Repository := 'Two ' + IntToStr(Rand + 10);
@@ -172,7 +200,7 @@ begin
   end;
 end;
 
-procedure TForm1.Button3Click(Sender: TObject);
+procedure TfmMain.Button3Click(Sender: TObject);
 var XNode: PVirtualNode;
     Data: PPackageItemData;
 begin
@@ -189,12 +217,12 @@ begin
   VST.Expanded[VST.FocusedNode] := True;
 end;
 
-procedure TForm1.Button4Click(Sender: TObject);
+procedure TfmMain.Button4Click(Sender: TObject);
 begin
   VST.DeleteSelectedNodes;
 end;
 
-procedure TForm1.FormCreate(Sender: TObject);
+procedure TfmMain.FormCreate(Sender: TObject);
 begin
   // fix runtime
   PageControl1.ShowTabs:=False;
@@ -203,12 +231,24 @@ begin
   // init
   StatusPanel_FormStatus:='Ready';
   ViewMode:=vmList;
+  with TCustomPackageManager.GetSystemInfo do begin
+      lbSystemHostName.Caption := HostName;
+      lbSystemKernelName.Caption := KernelName;
+  end;
 
   // allocate resources
   FPackages:=nil;
+
+  //
+  if not TCustomPackageManager.IsRunningAsSudo then begin
+     MessageDlg('PAGeant', 'You are running PAGeant without administrator rights.' + LineEnding +
+                           'In this case, not all functionality will be accessible!',
+                           mtWarning, [mbOK], '');
+  end;
+
 end;
 
-procedure TForm1.FormDestroy(Sender: TObject);
+procedure TfmMain.FormDestroy(Sender: TObject);
 begin
 
   // free resoruces
@@ -216,45 +256,60 @@ begin
   vst.Clear;
 end;
 
-procedure TForm1.Label4Click(Sender: TObject);
+procedure TfmMain.Image1Click(Sender: TObject);
+begin
+
+end;
+
+procedure TfmMain.Label4Click(Sender: TObject);
 begin
   ShowMessage('Not yet implemented');
 end;
 
-procedure TForm1.Label5Click(Sender: TObject);
+procedure TfmMain.Label5Click(Sender: TObject);
 begin
   ShowMessage('Not yet implemented');
 end;
 
-procedure TForm1.lbViewAsListClick(Sender: TObject);
+procedure TfmMain.Label6Click(Sender: TObject);
+begin
+   with TfmAbout.Create(self) do
+      try
+        ShowModal;
+      finally
+        Free;
+      end;
+end;
+
+procedure TfmMain.lbViewAsListClick(Sender: TObject);
 begin
   ViewMode:=vmList;
   PopulateGrid(Packages);
 end;
 
-procedure TForm1.lbViewAsTreeClick(Sender: TObject);
+procedure TfmMain.lbViewAsTreeClick(Sender: TObject);
 begin
   ViewMode:=vmTree;
   PopulateGrid(Packages);
 end;
 
-procedure TForm1.lbViewAsTreeMouseEnter(Sender: TObject);
+procedure TfmMain.lbViewAsTreeMouseEnter(Sender: TObject);
 begin
 
 end;
 
-procedure TForm1.vstChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
+procedure TfmMain.vstChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
 begin
   VST.Refresh;
 end;
 
-procedure TForm1.vstFocusChanged(Sender: TBaseVirtualTree; Node: PVirtualNode;
+procedure TfmMain.vstFocusChanged(Sender: TBaseVirtualTree; Node: PVirtualNode;
   Column: TColumnIndex);
 begin
   VST.Refresh;
 end;
 
-procedure TForm1.vstFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
+procedure TfmMain.vstFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
 var
   Data: PPackageItemData;
 begin
@@ -273,13 +328,13 @@ begin
   end;
 end;
 
-procedure TForm1.vstGetNodeDataSize(Sender: TBaseVirtualTree;
+procedure TfmMain.vstGetNodeDataSize(Sender: TBaseVirtualTree;
   var NodeDataSize: Integer);
 begin
   NodeDataSize := SizeOf(TPackageItemData);
 end;
 
-procedure TForm1.vstGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
+procedure TfmMain.vstGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
   Column: TColumnIndex; TextType: TVSTTextType; var CellText: String);
 var Data: PPackageItemData;
 begin
@@ -295,13 +350,13 @@ begin
   end;
 end;
 
-procedure TForm1.SetStatusPanel_FormStatus(AValue: string);
+procedure TfmMain.SetStatusPanel_FormStatus(AValue: string);
 begin
   StatusBar1.Panels[0].Text := 'Status: ' + AValue;
   Application.ProcessMessages;
 end;
 
-procedure TForm1.SetStatusPanel_ItemsCount(AValue: integer);
+procedure TfmMain.SetStatusPanel_ItemsCount(AValue: integer);
 var s: string;
 begin
   if AValue < 0 then
@@ -312,7 +367,7 @@ begin
   Application.ProcessMessages;
 end;
 
-procedure TForm1.SetStatusPanel_SumOf_Size(AValue: integer);
+procedure TfmMain.SetStatusPanel_SumOf_Size(AValue: integer);
 var s: string;
 begin
   if AValue < 0 then
@@ -323,7 +378,7 @@ begin
   Application.ProcessMessages;
 end;
 
-procedure TForm1.PopulateGrid(const APackagesList: TJSONArray);
+procedure TfmMain.PopulateGrid(const APackagesList: TJSONArray);
 begin
   vst.Clear;
 
@@ -336,7 +391,7 @@ begin
   end;
 end;
 
-procedure TForm1.DoPopulateGridAsList(const APackagesList: TJSONArray);
+procedure TfmMain.DoPopulateGridAsList(const APackagesList: TJSONArray);
 var je: TJSONEnum;
     ji: TJSONObject;
     js: TJSONString;
@@ -352,8 +407,8 @@ begin
       ji:=je.Value as TJSONObject;
 
       XNode := VST.AddChild(nil);
-      if VST.AbsoluteIndex(XNode) > -1 then
-      begin
+      // if VST.AbsoluteIndex(XNode) > -1 then
+      if Assigned(XNode) then begin
 
         Data := VST.GetNodeData(Xnode);
 
@@ -381,7 +436,7 @@ begin
   end;
 end;
 
-procedure TForm1.DoPopulateGridAsGroupByCat(const APackagesList: TJSONArray);
+procedure TfmMain.DoPopulateGridAsGroupByCat(const APackagesList: TJSONArray);
 var je: TJSONEnum;
     ji: TJSONObject;
     js: TJSONString;
@@ -415,8 +470,8 @@ begin
 
         // XNode := VST.AddChild(nil);
         XNode := VST.AddChild(XCategoryNode);
-        if VST.AbsoluteIndex(XNode) > -1 then
-        begin
+        // if VST.AbsoluteIndex(XNode) > -1 then
+        if Assigned(XNode) then begin
 
           Data := VST.GetNodeData(Xnode);
 
@@ -445,7 +500,7 @@ begin
 
 end;
 
-procedure TForm1.SetViewMode(AValue: TViewMode);
+procedure TfmMain.SetViewMode(AValue: TViewMode);
 begin
   // if FViewMode=AValue then Exit;
   FViewMode:=AValue;
@@ -469,11 +524,10 @@ begin
 
 end;
 
-procedure TForm1.SearchPackages(const AValueToSearch: string);
+procedure TfmMain.SearchPackages(const AValueToSearch: string);
 var jo: TJSONObject;
     sOut:string;
     LuetWrap: TCustomPackageManager;
-    fmSudoPassword: TfmSudoPassword;
 begin
 
   LuetWrap:=TCustomPackageManager.Create;
@@ -492,30 +546,10 @@ begin
     if Assigned(FPackages) then
        FreeAndNil(FPackages);
 
-    if not LuetWrap.IsRunningAsSudo then begin
-
-       if self.SudoPassword <> '' then begin
-          LuetWrap.SudoPassword:=self.SudoPassword;
-       end else begin
-           fmSudoPassword:=TfmSudoPassword.Create(self);
-           try
-             if fmSudoPassword.ShowModal = mrOK then begin
-                LuetWrap.SudoPassword:=fmSudoPassword.edPass.Text;
-                if fmSudoPassword.cbRemember.Checked then
-                   self.SudoPassword:=fmSudoPassword.edPass.Text;
-             end;
-
-           finally
-             FreeAndnil(fmSudoPassword);
-           end;
-       end;
-
-    end;
-
     LuetWrap.IsSearchInstalled:=cbSearchInstalled.Checked;
     LuetWrap.SearchMode:=TSearchMode( cbSearchLocation.ItemIndex );
 
-    if pnNerdPanel.Visible then
+    if pnHistory.Visible then
        SendHistoryPanel( LuetWrap.GetWrappedCommand(AValueToSearch, True) );
 
     sOut := LuetWrap.Search(AValueToSearch);
@@ -543,14 +577,43 @@ begin
 
 end;
 
+procedure TfmMain.InspectPackage(const APackageName: string);
+var ji: TJSONObject;
+    je: TJSONEnum;
+begin
+  // - - - - - - - - - - - - - - - -
+  // search package
+  // - - - - - - - - - - - - - - - -
+  ji:=nil;
+  for je in Packages do begin
+      if TJSONObject(je.Value).Strings['name'] = APackageName then begin
+         ji:=je.Value as TJSONObject;
+         break;
+      end;
+  end;
+
+  // - - - - - - - - - - - - - - - -
+  // search package
+  // - - - - - - - - - - - - - - - -
+  with TfmPackageDetails.Create(self) do begin
+       Title:=APackageName;
+       PackageDetails:=ji;
+       Show;
+  end;
+
+end;
+
 {$IFDEF DEBUG_INCLUDE_TEST}
-procedure TForm1.CheckUpdates;
+procedure TfmMain.CheckUpdates;
+{
 var ui: TPackageList;
     i:integer;
     sOut: string;
     Data: PPackageItemData;
     XNode: PVirtualNode;
+}
 begin
+  {
   ui:=TPackageList.Create;
   SetLength(ui,0);
   i := TCustomPackageManager.Test_CheckUpdates(ui, sOut);
@@ -588,14 +651,14 @@ begin
 
 
   end;
-
+  }
 end;
 
 {$ENDIF}
 
-procedure TForm1.SendHistoryPanel(const AValue: string);
+procedure TfmMain.SendHistoryPanel(const AValue: string);
 begin
-  txShell.Lines.Add(AValue);
+  lboxHistory.Items.Insert(0, AValue);
   Application.ProcessMessages;;
 end;
 

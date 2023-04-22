@@ -7,7 +7,8 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, umain, ucustompackagemanager;
+  Forms, umain, ucustompackagemanager, upackagedetails_fm, utypes, uutils,
+umain_dm, uabout_fm;
 
 {$R *.res}
 
@@ -15,7 +16,8 @@ begin
   RequireDerivedFormResource:=True;
   Application.Scaled:=True;
   Application.Initialize;
-  Application.CreateForm(TForm1, Form1);
+  Application.CreateForm(TdmMain, dmMain);
+  Application.CreateForm(TfmMain, fmMain);
   Application.Run;
 end.
 

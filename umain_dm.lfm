@@ -1,0 +1,9 @@
+object dmMain: TdmMain
+  OnCreate = DataModuleCreate
+  OnDestroy = DataModuleDestroy
+  OldCreateOrder = False
+  Height = 247
+  HorizontalOffset = 641
+  VerticalOffset = 263
+  Width = 401
+end

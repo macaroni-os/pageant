@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://github.com/macaroni-os/macaroni-site/blob/master/site/static/images/logo.png">
+</p>
+
 # PAGeant
 
 **P**ascal **A**nice **G**eant is a GUI for the Macaroni PMS.

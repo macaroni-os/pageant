@@ -7,7 +7,7 @@ object fmAbout: TfmAbout
   ClientHeight = 342
   ClientWidth = 443
   OnClose = FormClose
-  LCLVersion = '2.3.0.0'
+  LCLVersion = '2.2.4.0'
   object Image1: TImage
     Left = 120
     Height = 46
@@ -469,6 +469,7 @@ object fmAbout: TfmAbout
     AutoSize = False
     Caption = 'PAGeant'
     Font.Height = -53
+    ParentColor = False
     ParentFont = False
   end
   object Label2: TLabel
@@ -480,6 +481,7 @@ object fmAbout: TfmAbout
     AutoSize = False
     Caption = 'The GUI side of macaroni-os'' package management system'
     Font.Style = [fsBold]
+    ParentColor = False
     ParentFont = False
   end
   object Label3: TLabel
@@ -491,6 +493,7 @@ object fmAbout: TfmAbout
     AutoSize = False
     Caption = 'Basso Marcello aka nomorelogic'
     Font.Style = [fsBold]
+    ParentColor = False
     ParentFont = False
   end
   object Label4: TLabel
@@ -499,11 +502,12 @@ object fmAbout: TfmAbout
     Top = 232
     Width = 145
     Caption = 'Credits:'#10'Lazarus and Free Pascal'#10'VirtualTreeView'
+    ParentColor = False
   end
   object BitBtn1: TBitBtn
-    Left = 309
+    Left = 344
     Height = 30
-    Top = 298
+    Top = 296
     Width = 75
     Caption = 'Close'
     ModalResult = 11

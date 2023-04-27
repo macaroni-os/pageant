@@ -10,7 +10,7 @@ object fmMain: TfmMain
   Constraints.MinWidth = 720
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  LCLVersion = '2.3.0.0'
+  LCLVersion = '2.2.4.0'
   object StatusBar1: TStatusBar
     Left = 0
     Height = 17
@@ -539,7 +539,6 @@ object fmMain: TfmMain
       Width = 194
       Align = alTop
       Caption = 'View as'
-      Color = clSkyBlue
       Font.Color = clSilver
       Font.Style = [fsBold]
       ParentColor = False
@@ -553,7 +552,6 @@ object fmMain: TfmMain
       Width = 194
       Align = alTop
       Caption = '   List'
-      Color = clSkyBlue
       Font.Color = clSilver
       ParentColor = False
       ParentFont = False
@@ -568,7 +566,6 @@ object fmMain: TfmMain
       Align = alBottom
       AutoSize = False
       Caption = 'Repository'
-      Color = clSilver
       Font.Color = clSilver
       Font.Style = [fsBold]
       ParentColor = False
@@ -583,7 +580,6 @@ object fmMain: TfmMain
       Width = 194
       Align = alTop
       Caption = '   Tree'
-      Color = clSkyBlue
       Font.Color = clSilver
       ParentColor = False
       ParentFont = False
@@ -599,7 +595,6 @@ object fmMain: TfmMain
       Align = alBottom
       AutoSize = False
       Caption = 'Kernel'
-      Color = clSilver
       Font.Color = clSilver
       Font.Style = [fsBold]
       ParentColor = False
@@ -615,7 +610,6 @@ object fmMain: TfmMain
       Align = alBottom
       AutoSize = False
       Caption = 'About'
-      Color = clSilver
       Font.Color = clSilver
       Font.Style = [fsBold]
       ParentColor = False
@@ -751,6 +745,7 @@ object fmMain: TfmMain
               Width = 225
               Align = alTop
               ItemHeight = 0
+              ItemIndex = 0
               Items.Strings = (
                 'Search by name'
                 'Match package name (-n)'
@@ -761,6 +756,7 @@ object fmMain: TfmMain
               ShowHint = True
               Style = csDropDownList
               TabOrder = 1
+              Text = 'Search by name'
             end
           end
           object edTextToSearch: TEdit
@@ -1632,7 +1628,7 @@ object fmMain: TfmMain
   object SynUNIXShellScriptSyn1: TSynUNIXShellScriptSyn
     DefaultFilter = 'UNIX Shell Scripts (*.sh)|*.sh'
     Enabled = False
-    Left = 40
+    Left = 72
     Top = 344
   end
   object pmItems: TPopupMenu

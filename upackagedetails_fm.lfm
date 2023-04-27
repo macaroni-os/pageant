@@ -31,7 +31,6 @@ object fmPackageDetails: TfmPackageDetails
         Width = 494
         Align = alClient
         ParentShowHint = False
-        ShowSeparators = False
         TabOrder = 0
         OnChanging = tvDetChanging
         OnExit = tvDetExit

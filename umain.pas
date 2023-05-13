@@ -9,6 +9,7 @@ uses
   synhighlighterunixshellscript
   // ,VirtualStringTree
   , fpjson
+  , utypes
   ;
 
 
@@ -24,14 +25,20 @@ type
     acSearchPackages: TAction;
     acInspectPackage: TAction;
     acHistoryCopyItem: TAction;
+    acGuiShowRepository: TAction;
+    acGuiShowKernel: TAction;
+    acGuiShowPackages: TAction;
+    acSearchRepositories: TAction;
     ActionList1: TActionList;
     BitBtn1: TBitBtn;
+    BitBtn2: TBitBtn;
     Button1: TButton;
     Button2: TButton;
     Button3: TButton;
     Button4: TButton;
     cbSearchInstalled: TCheckBox;
     cbSearchLocation: TComboBox;
+    cbSearchRepoType: TComboBox;
     edTextToSearch: TEdit;
     Image1: TImage;
     images: TImageList;
@@ -43,12 +50,16 @@ type
     Label4: TLabel;
     lbViewAsTree: TLabel;
     lboxHistory: TListBox;
+    listUrls: TListBox;
     Memo1: TMemo;
     MenuItem1: TMenuItem;
     miHistoryCopy: TMenuItem;
     PageControl1: TPageControl;
     Panel1: TPanel;
     Panel2: TPanel;
+    Panel3: TPanel;
+    pnRepoUrls: TPanel;
+    pnRepository: TPanel;
     pnSearchOtions: TPanel;
     pnBody: TPanel;
     pnMacroMenu: TPanel;
@@ -57,16 +68,26 @@ type
     pmHistory: TPopupMenu;
     Splitter1: TSplitter;
     lbSystemHostName: TStaticText;
+    StaticText1: TStaticText;
+    StaticText2: TStaticText;
+    StaticText3: TStaticText;
     StatusBar1: TStatusBar;
+    tsRepository: TTabSheet;
+    tsKernel: TTabSheet;
     tsDebug: TTabSheet;
     tsHome: TTabSheet;
     SynUNIXShellScriptSyn1: TSynUNIXShellScriptSyn;
     TrayIcon1: TTrayIcon;
     vst: TVirtualStringTree;
+    vstRepo: TVirtualStringTree;
     procedure acCheckUpdatesExecute(Sender: TObject);
+    procedure acGuiShowKernelExecute(Sender: TObject);
+    procedure acGuiShowPackagesExecute(Sender: TObject);
+    procedure acGuiShowRepositoryExecute(Sender: TObject);
     procedure acHistoryCopyItemExecute(Sender: TObject);
     procedure acInspectPackageExecute(Sender: TObject);
     procedure acSearchPackagesExecute(Sender: TObject);
+    procedure acSearchRepositoriesExecute(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
@@ -74,6 +95,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure Image1Click(Sender: TObject);
+    procedure Label2Click(Sender: TObject);
     procedure Label4Click(Sender: TObject);
     procedure Label5Click(Sender: TObject);
     procedure Label6Click(Sender: TObject);
@@ -84,12 +106,21 @@ type
     procedure vstFocusChanged(Sender: TBaseVirtualTree; Node: PVirtualNode;
       Column: TColumnIndex);
     procedure vstFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
-    procedure vstGetNodeDataSize(Sender: TBaseVirtualTree;
-      var NodeDataSize: Integer);
+    procedure vstGetNodeDataSize(Sender: TBaseVirtualTree; var NodeDataSize: Integer);
     procedure vstGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
       Column: TColumnIndex; TextType: TVSTTextType; var CellText: String);
+    procedure vstRepoChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    procedure vstRepoFocusChanged(Sender: TBaseVirtualTree; Node: PVirtualNode;
+      Column: TColumnIndex);
+    procedure vstRepoFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    procedure vstRepoGetNodeDataSize(Sender: TBaseVirtualTree;var NodeDataSize: Integer);
+    procedure vstRepoGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
+      Column: TColumnIndex; TextType: TVSTTextType; var CellText: String);
+    procedure vstRepoNodeClick(Sender: TBaseVirtualTree; const HitInfo: THitInfo
+      );
   private
     FPackages: TJSONArray;
+    FRepositories: TJSONArray;
     FViewMode: TViewMode;
     procedure SetStatusPanel_FormStatus(AValue: string);
     procedure SetStatusPanel_ItemsCount(AValue: integer);
@@ -98,13 +129,18 @@ type
     procedure PopulateGrid(const APackagesList: TJSONArray);
     procedure DoPopulateGridAsList(const APackagesList: TJSONArray);
     procedure DoPopulateGridAsGroupByCat(const APackagesList: TJSONArray);
+
+    procedure DoPopulateRepoGridAsList(const ARepositoriesList: TJSONArray);
+
     procedure SetViewMode(AValue: TViewMode);
 
   private
     property Packages: TJSONArray read FPackages write FPackages;
+    property Repositories: TJSONArray read FRepositories write FRepositories;
     property ViewMode: TViewMode read FViewMode write SetViewMode;
   public
      procedure SearchPackages(const AValueToSearch: string);
+     procedure SearchRepositoryes(const AType: TRepositorySearchMode = rsmAll);
      procedure InspectPackage(const APackageName: string);
      {$IFDEF DEBUG_INCLUDE_TEST}
      procedure CheckUpdates;
@@ -123,7 +159,7 @@ implementation
 
 {$R *.lfm}
 
-uses ucustompackagemanager, upackagedetails_fm, utypes, uabout_fm, Clipbrd;
+uses ucustompackagemanager, upackagedetails_fm, uabout_fm, Clipbrd, StrUtils;
 
 { TfmMain }
 
@@ -148,6 +184,21 @@ begin
   //   StatusPanel_FormStatus:='Ready';
   // end;
 {$ENDIF}
+end;
+
+procedure TfmMain.acGuiShowKernelExecute(Sender: TObject);
+begin
+  PageControl1.ActivePage:=tsKernel;
+end;
+
+procedure TfmMain.acGuiShowPackagesExecute(Sender: TObject);
+begin
+  PageControl1.ActivePage:=tsHome;
+end;
+
+procedure TfmMain.acGuiShowRepositoryExecute(Sender: TObject);
+begin
+   PageControl1.ActivePage:=tsRepository;
 end;
 
 procedure TfmMain.acHistoryCopyItemExecute(Sender: TObject);
@@ -175,6 +226,20 @@ begin
     StatusPanel_ItemsCount:=-1;
     StatusPanel_SumOf_Size:=-1;
     SearchPackages(edTextToSearch.Text);
+  finally
+    self.Cursor:=crDefault;
+    StatusPanel_FormStatus:='Ready';
+  end;
+end;
+
+procedure TfmMain.acSearchRepositoriesExecute(Sender: TObject);
+begin
+  StatusPanel_FormStatus:='Searching repositoryes...';
+  try
+    self.Cursor:=crAppStart;
+    StatusPanel_ItemsCount:=-1;
+    StatusPanel_SumOf_Size:=-1;
+    SearchRepositoryes( TRepositorySearchMode( cbSearchRepoType.ItemIndex) );
   finally
     self.Cursor:=crDefault;
     StatusPanel_FormStatus:='Ready';
@@ -238,8 +303,9 @@ begin
 
   // allocate resources
   FPackages:=nil;
+  FRepositories:=nil;
 
-  //
+  // test
   if not TCustomPackageManager.IsRunningAsSudo then begin
      MessageDlg('PAGeant', 'You are running PAGeant without administrator rights.' + LineEnding +
                            'In this case, not all functionality will be accessible!',
@@ -254,6 +320,10 @@ begin
   // free resoruces
   FreeAndNil(FPackages);
   vst.Clear;
+
+  FreeAndNil(FRepositories);
+  vstRepo.Clear;
+
 end;
 
 procedure TfmMain.Image1Click(Sender: TObject);
@@ -261,14 +331,19 @@ begin
 
 end;
 
+procedure TfmMain.Label2Click(Sender: TObject);
+begin
+    acGuiShowPackages.Execute;
+end;
+
 procedure TfmMain.Label4Click(Sender: TObject);
 begin
-  ShowMessage('Not yet implemented');
+  acGuiShowRepository.Execute;
 end;
 
 procedure TfmMain.Label5Click(Sender: TObject);
 begin
-  ShowMessage('Not yet implemented');
+  acGuiShowKernel.Execute;
 end;
 
 procedure TfmMain.Label6Click(Sender: TObject);
@@ -283,6 +358,9 @@ end;
 
 procedure TfmMain.lbViewAsListClick(Sender: TObject);
 begin
+  if PageControl1.ActivePage <> tsHome then
+     acGuiShowPackages.Execute;
+
   ViewMode:=vmList;
   PopulateGrid(Packages);
 end;
@@ -349,6 +427,68 @@ begin
                    Format('%8.2n', [( Data^.DownloadSize / 1048576 )]);
   end;
 end;
+
+procedure TfmMain.vstRepoChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
+begin
+  vstRepo.Refresh;
+end;
+
+procedure TfmMain.vstRepoFocusChanged(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; Column: TColumnIndex);
+begin
+  vstRepo.Refresh;
+end;
+
+procedure TfmMain.vstRepoFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
+var
+  Data: PRepositoryItemData;
+begin
+  Data := vstRepo.GetNodeData(Node);
+  if Assigned(Data) then begin
+    Data^.Status:='';
+    Data^.RepositoryName := '';
+    Data^.Description := '';
+    Data^.Revision := '';
+    Data^.Date := '';
+    Data^.Priority := '';
+    Data^.RepoType := '';
+    Data^.Urls := '';
+  end;
+end;
+
+procedure TfmMain.vstRepoGetNodeDataSize(Sender: TBaseVirtualTree;
+  var NodeDataSize: Integer);
+begin
+  NodeDataSize := SizeOf(TRepositoryItemData);
+end;
+
+procedure TfmMain.vstRepoGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
+  Column: TColumnIndex; TextType: TVSTTextType; var CellText: String);
+var Data: PRepositoryItemData;
+begin
+  Data := vstRepo.GetNodeData(Node);
+  case Column of
+    0: CellText := Data^.Status;
+    1: CellText := Data^.RepositoryName;
+    2: CellText := Data^.Description;
+    3: CellText := Data^.Revision;
+    4: CellText := Data^.Date;
+    5: CellText := Data^.Priority;
+    6: CellText := Data^.RepoType;
+  end;
+end;
+
+procedure TfmMain.vstRepoNodeClick(Sender: TBaseVirtualTree; const HitInfo: THitInfo);
+var Data: PRepositoryItemData;
+begin
+  listUrls.Clear;
+  try
+    Data := vstRepo.GetNodeData(HitInfo.HitNode);
+    listUrls.Items.Text:=Data^.Urls;
+  except
+  end;
+end;
+
 
 procedure TfmMain.SetStatusPanel_FormStatus(AValue: string);
 begin
@@ -500,6 +640,61 @@ begin
 
 end;
 
+procedure TfmMain.DoPopulateRepoGridAsList(const ARepositoriesList: TJSONArray);
+var je, jeurls: TJSONEnum;
+    ja: TJsonArray;
+    ji: TJSONObject;
+    s: string;
+    XNode: PVirtualNode;
+    Data: PRepositoryItemData;
+begin
+  // Update gui
+  StatusPanel_ItemsCount:=ARepositoriesList.Count;
+
+  for je in ARepositoriesList do begin
+      ji:=je.Value as TJSONObject;
+
+      XNode := vstRepo.AddChild(nil);
+
+      if Assigned(XNode) then begin
+
+        Data := vstRepo.GetNodeData(Xnode);
+
+        s:=ji.Strings['Status'];
+        Data^.Status := s;
+
+        s:=ji.Strings['Name'];
+        Data^.RepositoryName := s;
+
+        s:=ji.Strings['Description'];
+        Data^.Description:= s;
+
+        s:=ji.Strings['Revision'];
+        Data^.Revision:= s;
+
+        s:=ji.Strings['Date'];
+        Data^.Date:= s;
+
+        s:=ji.Strings['Priority'];
+        Data^.Priority:= s;
+
+        s:=ji.Strings['Type'];
+        Data^.RepoType:= s;
+
+        ja:=ji.Arrays['Urls'];
+        s:='';
+        for jeurls in ja do begin
+            if s <> '' then
+               s+=LineEnding;
+            s+=jeurls.Value.AsString;
+        end;
+        Data^.Urls:=s;
+
+     end;
+
+  end;
+end;
+
 procedure TfmMain.SetViewMode(AValue: TViewMode);
 begin
   // if FViewMode=AValue then Exit;
@@ -577,6 +772,128 @@ begin
 
 end;
 
+procedure TfmMain.SearchRepositoryes(const AType: TRepositorySearchMode);
+var sl: TStringList;
+    sOut:string;
+    LuetWrap: TCustomPackageManager;
+    i, p: integer;
+    s: string;
+    ji: TJSONObject;
+    ja: TJSONArray;
+begin
+
+  LuetWrap:=TCustomPackageManager.Create;
+  try
+
+    // - - - - - - - - - - - - - - - -
+    // init
+    // - - - - - - - - - - - - - - - -
+    vstRepo.Clear;
+    StatusPanel_FormStatus:='luet is searching...';
+    Application.ProcessMessages;
+
+    // - - - - - - - - - - - - - - - -
+    // search
+    // - - - - - - - - - - - - - - - -
+    if Assigned(FRepositories) then
+       FreeAndNil(FRepositories);
+
+    if pnHistory.Visible then
+       SendHistoryPanel( LuetWrap.GetWrappedRepoCommand(AType) );
+
+    FRepositories := TJSONArray.Create;
+
+    // if pnHistory.Visible then
+    //    SendHistoryPanel( LuetWrap.GetWrappedRepoCommand(AType) );
+
+    sOut := LuetWrap.SearchRepositories(AType);
+
+    // - - - - - - - - - - - - - - - -
+    // process results
+    // - - - - - - - - - - - - - - - -
+    StatusPanel_FormStatus:='Elaboration...';
+    Application.ProcessMessages;
+
+    sl:=TStringList.Create;
+    try
+      sl.Text:=sOut;
+
+      i:=-1;
+      while i < sl.Count-1 do begin
+         ji:=TJSONObject.Create;
+         FRepositories.Add(ji);
+         // line 1: flag enabled + repository name
+         inc(i);
+         s:=ExtractWord(1, sl[i], [' ']);
+         ji.Add('Status', s);
+         s:=ExtractWord(2, sl[i], [' ']);
+         ji.Add('Name', s);
+         // line 2: repository description
+         inc(i);
+         s:=sl[i].Trim;
+         ji.Add('Description', s);
+         // line 3: revision + date
+         inc(i);
+            p:=pos(' - ', sl[i]);
+            // revision
+            s:=copy(sl[i], 1, p-1);
+            s:=s.Replace('Revision', '', [rfReplaceAll]).Trim;
+            ji.Add('Revision', s);
+            // date
+            s:=copy(sl[i], p+3, length(sl[i]));
+            ji.Add('Date', s);
+         // line 4: priority + type
+         inc(i);
+            p:=pos(' - ', sl[i]);
+            // priority
+            s:=copy(sl[i], 1, p-1);
+            s:=s.Replace('Priority', '', [rfReplaceAll]).Trim;
+            ji.Add('Priority', s);
+            // type
+            s:=copy(sl[i], p+3, length(sl[i]));
+            s:=s.Replace('Type', '', [rfReplaceAll]).Trim;
+            ji.Add('Type', s);
+         // line 5: urls
+         inc(i);
+         s:=sl[i].Trim.ToLower;
+         if s <> 'urls:' then
+            raise Exception.Create('Unable to extract repository urls');
+         ja:=TJSONArray.Create;
+         ji.Add('Urls', ja);
+         repeat
+            inc(i);
+            s:=sl[i].Trim;
+            p:=pos('*', s);
+            s:=copy(s, p+1, length(s)).Trim;
+            ja.Add(s);
+
+            if ((i+1) <= sl.Count-1) then
+               s:=sl[i+1].Trim
+            else
+               s:= '';
+         until pos('*', s)=0;
+
+      end;
+
+      DoPopulateRepoGridAsList(Repositories);
+
+    finally
+      sl.Free;
+    end;
+
+    if not Assigned(FRepositories) then begin
+       MessageDlg('Error', 'search failed!', mtError, [mbOk], 0);
+       exit;
+    end;
+
+    // PopulateGrid(Packages);
+
+  finally
+    FreeAndNil(LuetWrap);
+  end;
+
+end;
+
 procedure TfmMain.InspectPackage(const APackageName: string);
 var ji: TJSONObject;
     je: TJSONEnum;
@@ -597,6 +914,7 @@ begin
   // - - - - - - - - - - - - - - - -
   with TfmPackageDetails.Create(self) do begin
        Title:=APackageName;
+       // AnimationImageList:=Images;
        PackageDetails:=ji;
        Show;
   end;

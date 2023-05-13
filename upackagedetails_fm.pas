@@ -6,8 +6,11 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ComCtrls,
-  ExtCtrls, Buttons, ActnList, VirtualTrees, SynEdit, SynHighlighterJScript
-  , fpjson, utypes, uutils;
+  ExtCtrls, Buttons, ActnList, VirtualTrees, SynEdit, SynHighlighterJScript,
+  fpjson
+  , utypes
+  , uutils
+  ;
 
 
 const
@@ -32,11 +35,13 @@ type
     lbValueTitle: TStaticText;
     edValueValue: TSynEdit;
     Splitter1: TSplitter;
+    StatusBar1: TStatusBar;
     SynJScriptSyn1: TSynJScriptSyn;
     tsContent: TTabSheet;
     tvDet: TTreeView;
     tsJson: TTabSheet;
     tsRaw: TTabSheet;
+
     procedure acDetCopyValueExecute(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure tsContentShow(Sender: TObject);
@@ -63,6 +68,7 @@ type
     procedure ShowJson(const ARoot: TJsonObject);
     procedure LoadPackageContent;
 
+  public
     property PackageDetails: TJsonObject read FPackageDetails write SetPackageDetails;
     property Options: TPackageDetailOptions read FOptions;
     property ShowPanelValue: boolean read FShowPanelValue write SetShowPanelValue;
@@ -139,6 +145,8 @@ function TfmPackageDetails.GetTitle: string;
 begin
   result := lbPackageName.Caption;
 end;
+
+
 
 procedure TfmPackageDetails.SetPanelValueTitle(AValue: string);
 begin
@@ -301,8 +309,6 @@ begin
    lboxFiles.Items.Add('');
    lboxFiles.Items.Add('');
    lboxFiles.Items.Add('loading info...');
-
-   Application.ProcessMessages;
 
    try
      self.Cursor:=crAppStart;

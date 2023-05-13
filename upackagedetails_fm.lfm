@@ -1,32 +1,31 @@
 object fmPackageDetails: TfmPackageDetails
-  Left = 830
+  Left = 609
   Height = 479
-  Top = 165
+  Top = 202
   Width = 842
   Caption = 'Package details'
   ClientHeight = 479
   ClientWidth = 842
   OnCreate = FormCreate
   Position = poScreenCenter
-  LCLVersion = '2.3.0.0'
+  LCLVersion = '2.2.4.0'
   object PageControl1: TPageControl
     Left = 0
-    Height = 429
-    Top = 50
+    Height = 414
+    Top = 48
     Width = 842
-    ActivePage = tsJson
+    ActivePage = tsContent
     Align = alClient
-    TabIndex = 0
+    TabIndex = 2
     TabOrder = 0
-    TabPosition = tpBottom
     object tsJson: TTabSheet
       BorderWidth = 3
       Caption = 'Details'
-      ClientHeight = 399
+      ClientHeight = 384
       ClientWidth = 832
       object tvDet: TTreeView
         Left = 0
-        Height = 399
+        Height = 384
         Top = 0
         Width = 494
         Align = alClient
@@ -37,18 +36,18 @@ object fmPackageDetails: TfmPackageDetails
       end
       object pnValue: TPanel
         Left = 504
-        Height = 399
+        Height = 384
         Top = 0
         Width = 328
         Align = alRight
         BevelOuter = bvNone
         BorderWidth = 2
-        ClientHeight = 399
+        ClientHeight = 384
         ClientWidth = 328
         TabOrder = 1
         inline edValueValue: TSynEdit
           Left = 2
-          Height = 357
+          Height = 342
           Top = 40
           Width = 324
           Align = alClient
@@ -290,16 +289,16 @@ object fmPackageDetails: TfmPackageDetails
               ShortCut = 16433
             end          
             item
+              Command = ecGotoMarker4
+              ShortCut = 16436
+            end          
+            item
               Command = ecGotoMarker2
               ShortCut = 16434
             end          
             item
               Command = ecGotoMarker3
               ShortCut = 16435
-            end          
-            item
-              Command = ecGotoMarker4
-              ShortCut = 16436
             end          
             item
               Command = ecGotoMarker5
@@ -578,7 +577,7 @@ object fmPackageDetails: TfmPackageDetails
       end
       object Splitter1: TSplitter
         Left = 494
-        Height = 399
+        Height = 384
         Top = 0
         Width = 10
         Align = alRight
@@ -588,7 +587,7 @@ object fmPackageDetails: TfmPackageDetails
     end
     object tsRaw: TTabSheet
       Caption = 'Raw data'
-      ClientHeight = 399
+      ClientHeight = 384
       ClientWidth = 832
       inline edDraft: TSynEdit
         Left = 32
@@ -1093,13 +1092,13 @@ object fmPackageDetails: TfmPackageDetails
     end
     object tsContent: TTabSheet
       BorderWidth = 3
-      Caption = 'Content'
-      ClientHeight = 399
+      Caption = 'Files'
+      ClientHeight = 384
       ClientWidth = 832
       OnShow = tsContentShow
       object lboxFiles: TListBox
         Left = 0
-        Height = 383
+        Height = 368
         Top = 16
         Width = 832
         Align = alClient
@@ -1114,16 +1113,17 @@ object fmPackageDetails: TfmPackageDetails
         Width = 832
         Align = alTop
         Caption = 'Files'
+        ParentColor = False
       end
     end
   end
   object pnTop: TPanel
     Left = 0
-    Height = 50
+    Height = 48
     Top = 0
     Width = 842
     Align = alTop
-    ClientHeight = 50
+    ClientHeight = 48
     ClientWidth = 842
     TabOrder = 1
     object lbPackageName: TLabel
@@ -1132,9 +1132,19 @@ object fmPackageDetails: TfmPackageDetails
       Top = 8
       Width = 92
       Caption = 'Package Name'
+      Color = clBackground
       Font.Style = [fsBold]
+      ParentColor = False
       ParentFont = False
+      Transparent = False
     end
+  end
+  object StatusBar1: TStatusBar
+    Left = 0
+    Height = 17
+    Top = 462
+    Width = 842
+    Panels = <>
   end
   object SynJScriptSyn1: TSynJScriptSyn
     Enabled = False

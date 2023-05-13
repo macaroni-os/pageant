@@ -31,6 +31,28 @@ TPackageList= array of TPackageItemData;
 TSearchMode = (smSearchByName, smMatchName, smMatchCatetoryAndName, smMatchLabels);
 
 
+
+{ TRepositoryItemData }
+
+TRepositoryItemData = record
+  Status: string;
+  RepositoryName: string;
+  Description: string;
+  Revision: string;
+  Date: string;
+  Priority: string;
+  RepoType: string;
+  Urls: string;
+end;
+
+PRepositoryItemData = ^TRepositoryItemData;
+
+TRepositoryList= array of TRepositoryItemData;
+
+TRepositorySearchMode = (rsmAll, rsmEnabled, rsmDisabled);
+
+
+
 { TSystemInfo }
 
 TSystemInfo = record

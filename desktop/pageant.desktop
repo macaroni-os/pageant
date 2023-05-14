@@ -1,0 +1,18 @@
+[Desktop Entry]
+Name=Pageant
+Comment=Macaroni OS PMS Gui
+TryExec=pageant
+Exec=pageant
+Icon=pageant
+Type=Application
+Categeories=Utility;System;
+StartupNotify=false
+X-Ubuntu-Gettext-Domain=pageant
+X-Ayatana-Desktop-Shortcuts=NewWindow;
+Keywords=macaroni;pms;
+[X-NewWindow Shortcut Group]
+Name=Open a New Window
+Exec=pagenat
+TargetEnvironment=Unity
+
+

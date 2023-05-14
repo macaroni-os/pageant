@@ -1,5 +1,6 @@
 DESTDIR ?=
-UBINDIR ?= /usr/bin
+USRDIR ?= usr
+UBINDIR ?= ${USRDIR}/bin
 LAZBUILD_OPTS ?= --lazarusdir=/usr/share/lazarus/ --build-mode=Release
 
 .PHONY: build install deps
@@ -12,4 +13,8 @@ build: deps
 
 install:
 	install -d $(DESTDIR)/$(UBINDIR)
+	install -d $(DESTDIR)/$(USRDIR)/share/icons/hicolor/scalable/apps/
+	install -d $(DESTDIR)/$(USRDIR)/share/applications/
+	install desktop/pageant.png $(DESTDIR)/$(USRDIR)/share/icons/hicolor/scalable/apps/
+	install desktop/pageant.desktop $(DESTDIR)/$(USRDIR)/share/applications/
 	install -m 0755 pageant $(DESTDIR)/$(UBINDIR)/

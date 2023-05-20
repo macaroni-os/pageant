@@ -10,7 +10,10 @@ uses
   // ,VirtualStringTree
   , fpjson
   , utypes
+  , FileInfo
   ;
+
+const __PAGEANT_VER_SUFFIX = ' alpha';
 
 
 type
@@ -29,9 +32,11 @@ type
     acGuiShowKernel: TAction;
     acGuiShowPackages: TAction;
     acSearchRepositories: TAction;
+    acRefreshKernelInfo: TAction;
     ActionList1: TActionList;
     BitBtn1: TBitBtn;
     BitBtn2: TBitBtn;
+    BitBtn3: TBitBtn;
     Button1: TButton;
     Button2: TButton;
     Button3: TButton;
@@ -42,9 +47,12 @@ type
     edTextToSearch: TEdit;
     Image1: TImage;
     images: TImageList;
+    Label1: TLabel;
     Label2: TLabel;
+    Label3: TLabel;
     Label5: TLabel;
     Label6: TLabel;
+    Label7: TLabel;
     lbSystemKernelName: TStaticText;
     lbViewAsList: TLabel;
     Label4: TLabel;
@@ -58,6 +66,10 @@ type
     Panel1: TPanel;
     Panel2: TPanel;
     Panel3: TPanel;
+    Panel4: TPanel;
+    pnKernelAvailable: TPanel;
+    pnKernelInstallable: TPanel;
+    pnKernelProfile: TPanel;
     pnRepoUrls: TPanel;
     pnRepository: TPanel;
     pnSearchOtions: TPanel;
@@ -71,6 +83,7 @@ type
     StaticText1: TStaticText;
     StaticText2: TStaticText;
     StaticText3: TStaticText;
+    StaticText4: TStaticText;
     StatusBar1: TStatusBar;
     tsRepository: TTabSheet;
     tsKernel: TTabSheet;
@@ -78,14 +91,18 @@ type
     tsHome: TTabSheet;
     SynUNIXShellScriptSyn1: TSynUNIXShellScriptSyn;
     TrayIcon1: TTrayIcon;
+    vstKerAvail: TVirtualStringTree;
     vst: TVirtualStringTree;
+    vstKerProfile: TVirtualStringTree;
     vstRepo: TVirtualStringTree;
+    vstKerList: TVirtualStringTree;
     procedure acCheckUpdatesExecute(Sender: TObject);
     procedure acGuiShowKernelExecute(Sender: TObject);
     procedure acGuiShowPackagesExecute(Sender: TObject);
     procedure acGuiShowRepositoryExecute(Sender: TObject);
     procedure acHistoryCopyItemExecute(Sender: TObject);
     procedure acInspectPackageExecute(Sender: TObject);
+    procedure acRefreshKernelInfoExecute(Sender: TObject);
     procedure acSearchPackagesExecute(Sender: TObject);
     procedure acSearchRepositoriesExecute(Sender: TObject);
     procedure Button1Click(Sender: TObject);
@@ -102,6 +119,7 @@ type
     procedure lbViewAsListClick(Sender: TObject);
     procedure lbViewAsTreeClick(Sender: TObject);
     procedure lbViewAsTreeMouseEnter(Sender: TObject);
+    procedure PageControl1Change(Sender: TObject);
     procedure vstChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure vstFocusChanged(Sender: TBaseVirtualTree; Node: PVirtualNode;
       Column: TColumnIndex);
@@ -109,6 +127,32 @@ type
     procedure vstGetNodeDataSize(Sender: TBaseVirtualTree; var NodeDataSize: Integer);
     procedure vstGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
       Column: TColumnIndex; TextType: TVSTTextType; var CellText: String);
+    procedure vstKerAvailChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    procedure vstKerAvailFocusChanged(Sender: TBaseVirtualTree;
+      Node: PVirtualNode; Column: TColumnIndex);
+    procedure vstKerAvailFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    procedure vstKerAvailGetNodeDataSize(Sender: TBaseVirtualTree;
+      var NodeDataSize: Integer);
+    procedure vstKerAvailGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
+      Column: TColumnIndex; TextType: TVSTTextType; var CellText: String);
+    procedure vstKerListChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    procedure vstKerListFocusChanged(Sender: TBaseVirtualTree;
+      Node: PVirtualNode; Column: TColumnIndex);
+    procedure vstKerListFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    procedure vstKerListGetNodeDataSize(Sender: TBaseVirtualTree;
+      var NodeDataSize: Integer);
+    procedure vstKerListGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
+      Column: TColumnIndex; TextType: TVSTTextType; var CellText: String);
+    procedure vstKerProfileChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    procedure vstKerProfileFocusChanged(Sender: TBaseVirtualTree;
+      Node: PVirtualNode; Column: TColumnIndex);
+    procedure vstKerProfileFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode
+      );
+    procedure vstKerProfileGetNodeDataSize(Sender: TBaseVirtualTree;
+      var NodeDataSize: Integer);
+    procedure vstKerProfileGetText(Sender: TBaseVirtualTree;
+      Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
+      var CellText: String);
     procedure vstRepoChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure vstRepoFocusChanged(Sender: TBaseVirtualTree; Node: PVirtualNode;
       Column: TColumnIndex);
@@ -119,8 +163,12 @@ type
     procedure vstRepoNodeClick(Sender: TBaseVirtualTree; const HitInfo: THitInfo
       );
   private
+    FileVerInfo: TFileVersionInfo;
     FPackages: TJSONArray;
     FRepositories: TJSONArray;
+    FKernelList,
+      FKernelAvail,
+      FKernelProfile: TJSONArray;
     FViewMode: TViewMode;
     procedure SetStatusPanel_FormStatus(AValue: string);
     procedure SetStatusPanel_ItemsCount(AValue: integer);
@@ -131,6 +179,10 @@ type
     procedure DoPopulateGridAsGroupByCat(const APackagesList: TJSONArray);
 
     procedure DoPopulateRepoGridAsList(const ARepositoriesList: TJSONArray);
+    procedure PopulateKernelListGrid(const AKernelListList: TJSONArray);
+    procedure PopulateKernelAvailableGrid(const AKernelAvailList: TJSONArray);
+    procedure PopulateKernelProfilesGrid(const AKernelProfilesList: TJSONArray);
+
 
     procedure SetViewMode(AValue: TViewMode);
 
@@ -142,6 +194,9 @@ type
      procedure SearchPackages(const AValueToSearch: string);
      procedure SearchRepositoryes(const AType: TRepositorySearchMode = rsmAll);
      procedure InspectPackage(const APackageName: string);
+     procedure SearchKernelList;
+     procedure SearchKernelAvailable;
+     procedure SearchKernelProfiles;
      {$IFDEF DEBUG_INCLUDE_TEST}
      procedure CheckUpdates;
      {$ENDIF}
@@ -218,6 +273,24 @@ begin
   InspectPackage(Data^.PackageName);
 end;
 
+procedure TfmMain.acRefreshKernelInfoExecute(Sender: TObject);
+begin
+  try
+    self.Cursor:=crAppStart;
+    StatusPanel_FormStatus:='Searching kernel available on system...';
+    SearchKernelList;
+
+    StatusPanel_FormStatus:='Searching kernel available to install...';
+    SearchKernelAvailable;
+
+    StatusPanel_FormStatus:='Searching profiles...';
+    SearchKernelProfiles;
+  finally
+    self.Cursor:=crDefault;
+    StatusPanel_FormStatus:='Ready';
+  end;
+end;
+
 procedure TfmMain.acSearchPackagesExecute(Sender: TObject);
 begin
   StatusPanel_FormStatus:='Searching packages...';
@@ -288,6 +361,7 @@ begin
 end;
 
 procedure TfmMain.FormCreate(Sender: TObject);
+var s: string;
 begin
   // fix runtime
   PageControl1.ShowTabs:=False;
@@ -304,6 +378,20 @@ begin
   // allocate resources
   FPackages:=nil;
   FRepositories:=nil;
+  FKernelList:=nil;
+    FKernelAvail:=nil;
+    FKernelProfile:=nil;
+
+  FileVerInfo:=TFileVersionInfo.Create(nil);
+
+  // get pageant version
+  FileVerInfo.ReadFileInfo;
+  s:= Format('%s Version: %s',
+                     [ FileVerInfo.VersionStrings.Values['InternalName'],
+                       FileVerInfo.VersionStrings.Values['FileVersion']
+                     ]) + __PAGEANT_VER_SUFFIX;
+  // LogInfo(Format('Start %s Company: %s Version:%s',[ FileVerInfo.VersionStrings.Values['InternalName']   , FileVerInfo.VersionStrings.Values['CompanyName']   , FileVerInfo.VersionStrings.Values['FileVersion']  ]));
+  WriteLn(s);
 
   // test
   if not TCustomPackageManager.IsRunningAsSudo then begin
@@ -316,6 +404,7 @@ end;
 
 procedure TfmMain.FormDestroy(Sender: TObject);
 begin
+  FileVerInfo.Free;
 
   // free resoruces
   FreeAndNil(FPackages);
@@ -323,6 +412,14 @@ begin
 
   FreeAndNil(FRepositories);
   vstRepo.Clear;
+
+  // kernel
+  FreeAndNil(FKernelList);
+  vstKerList.Clear;
+  FreeAndNil(FKernelAvail);
+  vstKerAvail.Clear;
+  FreeAndNil(FKernelProfile);
+  vstKerProfile.Clear;
 
 end;
 
@@ -338,6 +435,7 @@ end;
 
 procedure TfmMain.Label4Click(Sender: TObject);
 begin
+  acGuiShowPackages.Execute;
   acGuiShowRepository.Execute;
 end;
 
@@ -350,6 +448,7 @@ procedure TfmMain.Label6Click(Sender: TObject);
 begin
    with TfmAbout.Create(self) do
       try
+        lbVersion.Caption:=FileVerInfo.VersionStrings.Values['FileVersion'] + __PAGEANT_VER_SUFFIX;
         ShowModal;
       finally
         Free;
@@ -375,6 +474,12 @@ procedure TfmMain.lbViewAsTreeMouseEnter(Sender: TObject);
 begin
 
 end;
+
+procedure TfmMain.PageControl1Change(Sender: TObject);
+begin
+
+end;
+
 
 procedure TfmMain.vstChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
 begin
@@ -425,6 +530,154 @@ begin
     4: CellText := Data^.License;
     5: CellText := // Data^.DownloadSize.ToString;
                    Format('%8.2n', [( Data^.DownloadSize / 1048576 )]);
+  end;
+end;
+
+procedure TfmMain.vstKerAvailChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
+begin
+  vstKerAvail.Refresh;
+end;
+
+procedure TfmMain.vstKerAvailFocusChanged(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; Column: TColumnIndex);
+begin
+    vstKerAvail.Refresh;
+end;
+
+procedure TfmMain.vstKerAvailFreeNode(Sender: TBaseVirtualTree;
+  Node: PVirtualNode);
+var
+  Data: PKerAvailItemData;
+begin
+  Data := vstKerAvail.GetNodeData(Node);
+  if Assigned(Data) then begin
+     Data^.Name:='';
+     Data^.Category:='';
+     Data^.Version:='';
+     Data^.Repository:='';
+     Data^.EOL:='';
+     Data^.IsLTS:=False;
+     Data^.Released:='';
+     Data^.KerType:='';
+  end;
+end;
+
+procedure TfmMain.vstKerAvailGetNodeDataSize(Sender: TBaseVirtualTree;
+  var NodeDataSize: Integer);
+begin
+  NodeDataSize := SizeOf(TKerAvailItemData);
+end;
+
+procedure TfmMain.vstKerAvailGetText(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
+  var CellText: String);
+var Data: PKerAvailItemData;
+begin
+  Data := vstKerAvail.GetNodeData(Node);
+  case Column of
+    0: CellText := Data^.Name;
+    1: CellText := Data^.Category;
+    2: CellText := Data^.Version;
+    3: CellText := Data^.Repository;
+    4: CellText := Data^.EOL;
+    5: CellText := BoolToStr(Data^.IsLTS, 'LTS', '');
+    7: CellText := Data^.Released;
+    6: CellText := Data^.KerType;
+  end;
+end;
+
+procedure TfmMain.vstKerListChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
+begin
+  vstKerList.Refresh;
+end;
+
+procedure TfmMain.vstKerListFocusChanged(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; Column: TColumnIndex);
+begin
+  vstKerList.Refresh;
+end;
+
+procedure TfmMain.vstKerListFreeNode(Sender: TBaseVirtualTree;
+  Node: PVirtualNode);
+var
+  Data: PKerListItemData;
+begin
+  Data := vstKerList.GetNodeData(Node);
+  if Assigned(Data) then begin
+    Data^.Kernel:='';
+    Data^.Version:='';
+    Data^.KerType:='';
+    Data^.HasInitRd:=false;
+    Data^.InitRdFileName:='';
+    Data^.HasKernelImage:=false;
+    Data^.KernelFileName:='';
+    Data^.HasBzImageImage:=false;
+  end;
+end;
+
+procedure TfmMain.vstKerListGetNodeDataSize(Sender: TBaseVirtualTree;
+  var NodeDataSize: Integer);
+begin
+  NodeDataSize := SizeOf(TKerListItemData);
+end;
+
+procedure TfmMain.vstKerListGetText(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
+  var CellText: String);
+var Data: PKerListItemData;
+begin
+  Data := vstKerList.GetNodeData(Node);
+  case Column of
+    0: CellText := Data^.Kernel;
+    1: CellText := Data^.Version;
+    2: CellText := Data^.KerType;
+    3: CellText := Data^.InitRdFileName;
+    4: CellText := Data^.KernelFileName;
+  end;
+end;
+
+procedure TfmMain.vstKerProfileChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
+begin
+  vstKerProfile.Refresh;
+end;
+
+procedure TfmMain.vstKerProfileFocusChanged(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; Column: TColumnIndex);
+begin
+    vstKerProfile.Refresh;
+end;
+
+procedure TfmMain.vstKerProfileFreeNode(Sender: TBaseVirtualTree;
+  Node: PVirtualNode);
+var
+  Data: PKerProfileItemData;
+begin
+  Data := vstKerProfile.GetNodeData(Node);
+  if Assigned(Data) then begin
+    Data^.Name:='';
+    Data^.Suffix:='';
+    Data^.ProfileType:='';
+    Data^.WithArch:=false;
+  end;
+end;
+
+procedure TfmMain.vstKerProfileGetNodeDataSize(Sender: TBaseVirtualTree;
+  var NodeDataSize: Integer);
+begin
+  NodeDataSize := SizeOf(TKerProfileItemData);
+end;
+
+procedure TfmMain.vstKerProfileGetText(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
+  var CellText: String);
+var Data: PKerProfileItemData;
+begin
+  Data := vstKerProfile.GetNodeData(Node);
+  case Column of
+    0: CellText := Data^.Name;
+    1: CellText := Data^.Suffix;
+    2: CellText := Data^.ProfileType;
+    3: CellText := BoolToStr(Data^.WithArch, 'Yes', 'No');
   end;
 end;
 
@@ -695,6 +948,157 @@ begin
   end;
 end;
 
+procedure TfmMain.PopulateKernelListGrid(const AKernelListList: TJSONArray);
+var je: TJSONEnum;
+    ji, jik, jii, jit: TJSONObject;
+    js: TJSONString;
+    s: string;
+    XNode: PVirtualNode;
+    Data: PKerListItemData;
+begin
+  vstKerList.Clear;
+
+  if not Assigned(AKernelListList) then
+     exit;
+
+// -------------
+
+  // Update gui
+  for je in AKernelListList do begin
+      ji:=je.Value as TJSONObject;
+        jik := ji.Objects['kernel'];
+        jii := ji.Objects['initrd'];
+        jit := ji.Objects['type'];
+
+      XNode := vstKerList.AddChild(nil);
+
+      if Assigned(XNode) then begin
+
+        Data := vstKerList.GetNodeData(Xnode);
+
+        s:=jit.Strings['name'];
+        Data^.Kernel := s;
+
+        s:=jik.Strings['version'];
+        Data^.Version:=s;
+
+        s:=jik.Strings['type'];
+        Data^.KerType:=s;
+
+        Data^.HasInitRd:=False;
+        if Assigned(jii) then begin
+           Data^.HasInitRd:=True;
+
+           s:=jii.Strings['filename'];
+           Data^.InitRdFileName:=s;
+        end;
+
+        s:=jik.Strings['filename'];
+        Data^.KernelFileName:=s;
+
+        Data^.HasBzImageImage:=False;
+
+     end;
+
+  end;
+
+end;
+
+procedure TfmMain.PopulateKernelAvailableGrid(const AKernelAvailList: TJSONArray);
+var je: TJSONEnum;
+    ji, jis, jik: TJSONObject;
+    s: string;
+    XNode: PVirtualNode;
+    Data: PKerAvailItemData;
+begin
+  vstKerAvail.Clear;
+
+  if not Assigned(AKernelAvailList) then
+     exit;
+
+  // -------------
+
+  // Update gui
+  for je in AKernelAvailList do begin
+      ji:=je.Value as TJSONObject;
+        jis := ji.Objects['stone'];
+        jik := ji.Objects['kernel_data'];
+
+      XNode := vstKerAvail.AddChild(nil);
+
+      if Assigned(XNode) then begin
+
+        Data := vstKerAvail.GetNodeData(Xnode);
+
+        s:=jis.Strings['name'];
+        Data^.Name := s;
+
+        s:=jis.Strings['category'];
+        Data^.Category:=s;
+
+        s:=jis.Strings['version'];
+        Data^.Version:=s;
+
+        s:=jis.Strings['repository'];
+        Data^.Repository:=s;
+
+        s:=jik.Strings['eol'];
+        Data^.EOL:=s;
+
+        Data^.IsLTS:=jik.Booleans['lts'];
+
+        s:=jik.Strings['released'];
+        Data^.Released:=s;
+
+        s:=jik.Strings['vanilla'];
+        Data^.KerType:=s;
+
+     end;
+
+  end;
+
+end;
+
+procedure TfmMain.PopulateKernelProfilesGrid(const AKernelProfilesList: TJSONArray);
+var je: TJSONEnum;
+    ji: TJSONObject;
+    s: string;
+    XNode: PVirtualNode;
+    Data: PKerProfileItemData;
+begin
+  vstKerProfile.Clear;
+
+  if not Assigned(AKernelProfilesList) then
+     exit;
+// -------------
+
+  // Update gui
+  for je in AKernelProfilesList do begin
+      ji:=je.Value as TJSONObject;
+
+      XNode := vstKerProfile.AddChild(nil);
+
+      if Assigned(XNode) then begin
+
+        Data := vstKerProfile.GetNodeData(Xnode);
+
+        s:=ji.Strings['name'];
+        Data^.Name := s;
+
+        s:=ji.Strings['suffix'];
+        Data^.Suffix:=s;
+
+        s:=ji.Strings['type'];
+        Data^.ProfileType:=s;
+
+        Data^.WithArch:=ji.Booleans['with_arch'];
+
+     end;
+
+  end;
+
+end;
+
 procedure TfmMain.SetViewMode(AValue: TViewMode);
 begin
   // if FViewMode=AValue then Exit;
@@ -917,6 +1321,148 @@ begin
        // AnimationImageList:=Images;
        PackageDetails:=ji;
        Show;
+  end;
+
+end;
+
+procedure TfmMain.SearchKernelList;
+var jo: TJSONObject;
+    cmd: TCommandLineDef;
+    s: string;
+begin
+
+  try
+
+    // - - - - - - - - - - - - - - - -
+    // init
+    // - - - - - - - - - - - - - - - -
+    Application.ProcessMessages;
+
+    // - - - - - - - - - - - - - - - -
+    // search
+    // - - - - - - - - - - - - - - - -
+    if Assigned(FKernelList) then
+       FreeAndNil(FKernelList);
+
+    // if pnHistory.Visible then
+    //    SendHistoryPanel( TCustomPackageManager.GetWrappedKerListCommand );
+    if pnHistory.Visible then begin
+       cmd:=TCustomPackageManager.GetWrappedKerListCommand(False);
+       s:=cmd.Cmd + ' ' + ArrayOfStringToString(cmd.Params);
+       SendHistoryPanel( s );
+    end;
+
+
+    jo := TCustomPackageManager.GetKernelList;
+
+    // - - - - - - - - - - - - - - - -
+    // process results
+    // - - - - - - - - - - - - - - - -
+    StatusPanel_FormStatus:='Elaboration...';
+    Application.ProcessMessages;
+
+    FKernelList := jo.Extract('files') as TJSONArray;
+
+    if not Assigned(FKernelList) then begin
+       MessageDlg('Error', 'search failed!', mtError, [mbOk], 0);
+       exit;
+    end;
+
+    PopulateKernelListGrid(FKernelList);
+
+  finally
+    FreeAndNil(jo);
+  end;
+
+end;
+
+procedure TfmMain.SearchKernelAvailable;
+var jo: TJSONObject;
+    cmd: TCommandLineDef;
+    s: string;
+begin
+
+  try
+
+    // - - - - - - - - - - - - - - - -
+    // init
+    // - - - - - - - - - - - - - - - -
+    Application.ProcessMessages;
+
+    // - - - - - - - - - - - - - - - -
+    // search
+    // - - - - - - - - - - - - - - - -
+    if Assigned(FKernelAvail) then
+       FreeAndNil(FKernelAvail);
+
+    if pnHistory.Visible then begin
+       cmd:=TCustomPackageManager.GetWrappedKerAvailCommand(False);
+       s:=cmd.Cmd + ' ' + ArrayOfStringToString(cmd.Params);
+       SendHistoryPanel( s );
+    end;
+
+    jo := TCustomPackageManager.GetKernelAvailable;
+
+    // - - - - - - - - - - - - - - - -
+    // process results
+    // - - - - - - - - - - - - - - - -
+    StatusPanel_FormStatus:='Elaboration...';
+    Application.ProcessMessages;
+
+    FKernelAvail := jo.Extract('kernels') as TJSONArray;
+
+    if not Assigned(FKernelAvail) then begin
+       MessageDlg('Error', 'search failed!', mtError, [mbOk], 0);
+       exit;
+    end;
+
+    PopulateKernelAvailableGrid(FKernelAvail);
+
+  finally
+    FreeAndNil(jo);
+  end;
+
+end;
+
+procedure TfmMain.SearchKernelProfiles;
+var ji: TJSONObject;
+    cmd: TCommandLineDef;
+    s: string;
+begin
+
+  try
+
+    // - - - - - - - - - - - - - - - -
+    // init
+    // - - - - - - - - - - - - - - - -
+    Application.ProcessMessages;
+
+    // - - - - - - - - - - - - - - - -
+    // search
+    // - - - - - - - - - - - - - - - -
+    if Assigned(FKernelProfile) then
+       FreeAndNil(FKernelProfile);
+
+    if pnHistory.Visible then begin
+       cmd:=TCustomPackageManager.GetWrappedKerProfileCommand(False);
+       s:=cmd.Cmd + ' ' + ArrayOfStringToString(cmd.Params);
+       SendHistoryPanel( s );
+    end;
+
+    FKernelProfile := TCustomPackageManager.GetKernelProfiles;
+
+    // - - - - - - - - - - - - - - - -
+    // process results
+    // - - - - - - - - - - - - - - - -
+    if not Assigned(FKernelProfile) then begin
+       MessageDlg('Error', 'search failed!', mtError, [mbOk], 0);
+       exit;
+    end;
+
+    PopulateKernelProfilesGrid(FKernelProfile);
+
+  finally
+
   end;
 
 end;

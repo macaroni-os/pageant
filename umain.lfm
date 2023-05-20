@@ -19,7 +19,7 @@ object fmMain: TfmMain
     Panels = <    
       item
         Bevel = pbRaised
-        Width = 200
+        Width = 300
       end    
       item
         Width = 150
@@ -640,10 +640,11 @@ object fmMain: TfmMain
       Height = 414
       Top = 0
       Width = 800
-      ActivePage = tsRepository
+      ActivePage = tsKernel
       Align = alClient
-      TabIndex = 2
+      TabIndex = 3
       TabOrder = 0
+      OnChange = PageControl1Change
       object tsHome: TTabSheet
         BorderWidth = 3
         Caption = 'Home'
@@ -910,7 +911,7 @@ object fmMain: TfmMain
               item
                 Position = 0
                 Text = 'Status'
-                Width = 85
+                Width = 75
               end            
               item
                 Position = 1
@@ -920,21 +921,22 @@ object fmMain: TfmMain
               item
                 Position = 2
                 Text = 'Description'
-                Width = 150
+                Width = 230
               end            
               item
                 Position = 3
                 Text = 'Revision'
-                Width = 75
+                Width = 70
               end            
               item
                 Position = 4
                 Text = 'Date'
-                Width = 150
+                Width = 230
               end            
               item
                 Position = 5
                 Text = 'Priority'
+                Width = 55
               end            
               item
                 Position = 6
@@ -942,7 +944,6 @@ object fmMain: TfmMain
               end>
             Header.Options = [hoColumnResize, hoDrag, hoShowSortGlyphs, hoVisible]
             Header.Style = hsFlatButtons
-            PopupMenu = pmItems
             TabOrder = 0
             TreeOptions.MiscOptions = [toEditable, toFullRepaintOnResize, toGridExtensions, toInitOnSave, toToggleOnDblClick, toWheelPanning, toEditOnClick]
             TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowTreeLines, toThemeAware, toUseBlendedImages]
@@ -988,6 +989,252 @@ object fmMain: TfmMain
       end
       object tsKernel: TTabSheet
         Caption = 'Kernel'
+        ClientHeight = 384
+        ClientWidth = 790
+        object Panel4: TPanel
+          Left = 0
+          Height = 62
+          Top = 0
+          Width = 790
+          Align = alTop
+          BevelOuter = bvNone
+          BorderWidth = 3
+          ClientHeight = 62
+          ClientWidth = 790
+          TabOrder = 0
+          object BitBtn3: TBitBtn
+            Left = 584
+            Height = 38
+            Top = 14
+            Width = 192
+            Action = acRefreshKernelInfo
+            Anchors = [akTop, akRight]
+            Images = images
+            ImageIndex = 5
+            TabOrder = 0
+          end
+          object StaticText4: TStaticText
+            Left = 8
+            Height = 17
+            Top = 3
+            Width = 64
+            Caption = 'Kernel'
+            TabOrder = 1
+          end
+        end
+        object pnKernelAvailable: TPanel
+          Left = 0
+          Height = 98
+          Top = 62
+          Width = 790
+          Align = alTop
+          BorderWidth = 2
+          ClientHeight = 98
+          ClientWidth = 790
+          TabOrder = 1
+          object Label1: TLabel
+            Left = 3
+            Height = 16
+            Top = 3
+            Width = 784
+            Align = alTop
+            Caption = 'Available on system (list)'
+            ParentColor = False
+          end
+          object vstKerList: TVirtualStringTree
+            Cursor = 63
+            Left = 3
+            Height = 76
+            Top = 19
+            Width = 784
+            Align = alClient
+            DefaultNodeHeight = 19
+            DefaultText = 'Node'
+            Header.AutoSizeIndex = 0
+            Header.Columns = <            
+              item
+                Position = 0
+                Text = 'Name'
+                Width = 100
+              end            
+              item
+                Position = 1
+                Text = 'Version'
+                Width = 60
+              end            
+              item
+                Position = 2
+                Text = 'Type'
+                Width = 80
+              end            
+              item
+                Position = 3
+                Text = 'InitRd file name'
+                Width = 250
+              end            
+              item
+                Position = 4
+                Text = 'Kernel file name'
+                Width = 250
+              end>
+            Header.Options = [hoColumnResize, hoDrag, hoShowSortGlyphs, hoVisible]
+            Header.Style = hsFlatButtons
+            TabOrder = 0
+            TreeOptions.MiscOptions = [toEditable, toFullRepaintOnResize, toGridExtensions, toInitOnSave, toToggleOnDblClick, toWheelPanning, toEditOnClick]
+            TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowTreeLines, toThemeAware, toUseBlendedImages]
+            TreeOptions.SelectionOptions = [toExtendedFocus, toFullRowSelect, toMultiSelect]
+            OnChange = vstKerListChange
+            OnFocusChanged = vstKerListFocusChanged
+            OnFreeNode = vstKerListFreeNode
+            OnGetText = vstKerListGetText
+            OnGetNodeDataSize = vstKerListGetNodeDataSize
+          end
+        end
+        object pnKernelInstallable: TPanel
+          Left = 0
+          Height = 142
+          Top = 160
+          Width = 790
+          Align = alClient
+          BorderWidth = 2
+          ClientHeight = 142
+          ClientWidth = 790
+          TabOrder = 2
+          object Label3: TLabel
+            Left = 3
+            Height = 16
+            Top = 3
+            Width = 784
+            Align = alTop
+            Caption = 'Available to install (available)'
+            ParentColor = False
+          end
+          object vstKerAvail: TVirtualStringTree
+            Cursor = 63
+            Left = 3
+            Height = 120
+            Top = 19
+            Width = 784
+            Align = alClient
+            DefaultNodeHeight = 19
+            DefaultText = 'Node'
+            Header.AutoSizeIndex = 0
+            Header.Columns = <            
+              item
+                Position = 0
+                Text = 'Name'
+                Width = 100
+              end            
+              item
+                Position = 1
+                Text = 'Category'
+                Width = 100
+              end            
+              item
+                Position = 2
+                Text = 'Version'
+                Width = 100
+              end            
+              item
+                Position = 3
+                Text = 'Repository'
+                Width = 150
+              end            
+              item
+                Position = 4
+                Text = 'EOL'
+                Width = 80
+              end            
+              item
+                Position = 5
+                Text = 'LTS'
+              end            
+              item
+                Position = 6
+                Text = 'Released'
+                Width = 100
+              end            
+              item
+                Position = 7
+                Text = 'Type'
+                Width = 100
+              end>
+            Header.Options = [hoColumnResize, hoDrag, hoShowSortGlyphs, hoVisible]
+            Header.Style = hsFlatButtons
+            TabOrder = 0
+            TreeOptions.MiscOptions = [toEditable, toFullRepaintOnResize, toGridExtensions, toInitOnSave, toToggleOnDblClick, toWheelPanning, toEditOnClick]
+            TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowTreeLines, toThemeAware, toUseBlendedImages]
+            TreeOptions.SelectionOptions = [toExtendedFocus, toFullRowSelect, toMultiSelect]
+            OnChange = vstKerAvailChange
+            OnFocusChanged = vstKerAvailFocusChanged
+            OnFreeNode = vstKerAvailFreeNode
+            OnGetText = vstKerAvailGetText
+            OnGetNodeDataSize = vstKerAvailGetNodeDataSize
+          end
+        end
+        object pnKernelProfile: TPanel
+          Left = 0
+          Height = 82
+          Top = 302
+          Width = 790
+          Align = alBottom
+          BorderWidth = 2
+          ClientHeight = 82
+          ClientWidth = 790
+          TabOrder = 3
+          object Label7: TLabel
+            Left = 3
+            Height = 16
+            Top = 3
+            Width = 784
+            Align = alTop
+            Caption = 'Profiles'
+            ParentColor = False
+          end
+          object vstKerProfile: TVirtualStringTree
+            Cursor = 63
+            Left = 3
+            Height = 60
+            Top = 19
+            Width = 784
+            Align = alClient
+            DefaultNodeHeight = 19
+            DefaultText = 'Node'
+            Header.AutoSizeIndex = 0
+            Header.Columns = <            
+              item
+                Position = 0
+                Text = 'Name'
+                Width = 200
+              end            
+              item
+                Position = 1
+                Text = 'Suffix'
+                Width = 150
+              end            
+              item
+                Position = 2
+                Text = 'Type'
+                Width = 150
+              end            
+              item
+                Position = 3
+                Text = 'With Arch'
+                Width = 80
+              end>
+            Header.Options = [hoColumnResize, hoDrag, hoShowSortGlyphs, hoVisible]
+            Header.Style = hsFlatButtons
+            TabOrder = 0
+            TreeOptions.MiscOptions = [toEditable, toFullRepaintOnResize, toGridExtensions, toInitOnSave, toToggleOnDblClick, toWheelPanning, toEditOnClick]
+            TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowTreeLines, toThemeAware, toUseBlendedImages]
+            TreeOptions.SelectionOptions = [toExtendedFocus, toFullRowSelect, toMultiSelect]
+            OnChange = vstKerProfileChange
+            OnFocusChanged = vstKerProfileFocusChanged
+            OnFreeNode = vstKerProfileFreeNode
+            OnGetText = vstKerProfileGetText
+            OnGetNodeDataSize = vstKerProfileGetNodeDataSize
+          end
+        end
       end
     end
     object pnHistory: TPanel
@@ -1061,6 +1308,12 @@ object fmMain: TfmMain
       Caption = 'SearchRepositories'
       ImageIndex = 23
       OnExecute = acSearchRepositoriesExecute
+    end
+    object acRefreshKernelInfo: TAction
+      Category = 'Search'
+      Caption = 'Refresh kernel info'
+      ImageIndex = 5
+      OnExecute = acRefreshKernelInfoExecute
     end
   end
   object images: TImageList

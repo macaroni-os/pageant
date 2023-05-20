@@ -51,6 +51,76 @@ TRepositoryList= array of TRepositoryItemData;
 
 TRepositorySearchMode = (rsmAll, rsmEnabled, rsmDisabled);
 
+TArrayOfString = array of string;
+
+TCommandLineDef = record
+  CurDir: string;
+  Cmd: string;
+  Params: TArrayOfString
+end;
+
+
+{ TKerListItemData }
+
+// |  KERNEL  | KERNEL VERSION |  TYPE   | HAS INITRD | HAS KERNEL IMAGE | HAS BZIMAGE,INITRD LINKS |
+// |----------|----------------|---------|------------|------------------|--------------------------|
+// | macaroni | 6.1.18         | vanilla | true       | true             | false                    |
+
+TKerListItemData = record
+  Kernel: string;
+  Version: string;
+  KerType: string;
+  HasInitRd: boolean;
+  InitRdFileName: string;
+  HasKernelImage: boolean;
+  KernelFileName: string;
+  HasBzImageImage: boolean;
+end;
+
+PKerListItemData = ^TKerListItemData;
+
+TKerListList= array of TKerListItemData;
+
+
+{ TKerAvailItemData }
+
+// |  KERNEL  | KERNEL VERSION | PACKAGE VERSION |    EOL    |  LTS  |  RELEASED  |  TYPE   |
+// |----------|----------------|-----------------|-----------|-------|------------|---------|
+// | macaroni | 4.14.309       | 4.14.309        | Jan, 2024 | true  | 2017-11-12 | vanilla |
+
+TKerAvailItemData = record
+  Name: string;
+  Category: string;
+  Version: string;
+  Repository: string;
+  EOL: string;
+  IsLTS: boolean;
+  Released: string;
+  KerType: string;
+end;
+
+PKerAvailItemData = ^TKerAvailItemData;
+
+TKerAvailList= array of TKerAvailItemData;
+
+
+{ TKerProfileItemData }
+
+// |   NAME   | KERNEL PREFIX | INITRD PREFIX |  SUFFIX  |   TYPE    | WITH ARCH |
+// |----------|---------------|---------------|----------|-----------|-----------|
+// | Sabayon  | kernel        | initramfs     | sabayon  | genkernel | true      |
+// | Macaroni | kernel        | initramfs     | macaroni | vanilla   | true      |
+
+TKerProfileItemData = record
+  Name: string;
+  Suffix: string;
+  ProfileType: string;
+  WithArch: boolean;
+end;
+
+PKerProfileItemData = ^TKerProfileItemData;
+
+TKerProfileList= array of TKerProfileItemData;
 
 
 { TSystemInfo }
@@ -73,8 +143,21 @@ TPackageDetailOptions = record // Class(TObject)
 end;
 
 
+function ArrayOfStringToString(const AArray: TArrayOfString): string;
+
 
 implementation
+
+function ArrayOfStringToString(const AArray: TArrayOfString): string;
+var s: string;
+begin
+  result := '';
+  for s in AArray do begin
+      if result <> '' then
+         result += ' ';
+      result += s
+  end;
+end;
 
 end.
 

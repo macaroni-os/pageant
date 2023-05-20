@@ -19,6 +19,7 @@ type
     Label2: TLabel;
     Label3: TLabel;
     Label4: TLabel;
+    lbVersion: TLabel;
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
   private
 

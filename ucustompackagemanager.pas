@@ -20,10 +20,15 @@ type
     class function IsRunningAsSudo: boolean;
     class function GetSystemInfo: TSystemInfo; virtual;
     class function GetPackageContent(const APackageName: string): TJsonArray; virtual;
-
+    class function GetKernelList: TJsonObject; virtual;
+    class function GetKernelAvailable: TJsonObject; virtual;
+    class function GetKernelProfiles: TJsonArray; virtual;
   public
     function GetWrappedCommand(const ASearchVal: string; const IsPreview: boolean = False): string;
     function GetWrappedRepoCommand(const ASearchType: TRepositorySearchMode): string;
+    class function GetWrappedKerListCommand(const GetAsJson: boolean = False): TCommandLineDef;
+    class function GetWrappedKerAvailCommand(const GetAsJson: boolean = False): TCommandLineDef;
+    class function GetWrappedKerProfileCommand(const GetAsJson: boolean = False): TCommandLineDef;
 
     function Search(const ASearchVal: string): string; virtual;
     function SearchRepositories(const ASearchType: TRepositorySearchMode): string; virtual;
@@ -95,6 +100,48 @@ begin
   except
     on e: exception do
        result := GetJSON('[]') as TJSONArray;
+  end;
+end;
+
+class function TCustomPackageManager.GetKernelList: TJsonObject;
+var s: string;
+    cmd: TCommandLineDef;
+begin
+  try
+    cmd:=GetWrappedKerListCommand(True);
+    process.RunCommandInDir(cmd.CurDir, cmd.Cmd, cmd.Params, s);
+    result := GetJSON(s) as TJsonObject;
+  except
+    on e: exception do
+       result := GetJSON('{}') as TJsonObject;
+  end;
+end;
+
+class function TCustomPackageManager.GetKernelAvailable: TJsonObject;
+var s: string;
+    cmd: TCommandLineDef;
+begin
+  try
+    cmd:=GetWrappedKerAvailCommand(True);
+    process.RunCommandInDir(cmd.CurDir, cmd.Cmd, cmd.Params, s);
+    result := GetJSON(s) as TJsonObject;
+  except
+    on e: exception do
+       result := GetJSON('{}') as TJsonObject;
+  end;
+end;
+
+class function TCustomPackageManager.GetKernelProfiles: TJsonArray;
+var s: string;
+    cmd: TCommandLineDef;
+begin
+  try
+    cmd:=GetWrappedKerProfileCommand(True);
+    process.RunCommandInDir(cmd.CurDir, cmd.Cmd, cmd.Params, s);
+    result := GetJSON(s) as TJsonArray;
+  except
+    on e: exception do
+       result := GetJSON('[]') as TJsonArray;
   end;
 end;
 
@@ -178,6 +225,7 @@ begin
 
 end;
 
+
 function TCustomPackageManager.GetWrappedRepoCommand(const ASearchType: TRepositorySearchMode): string;
 begin
   // echo "<enabled>" && luet repo list --enabled && echo "<disabled>" && luet repo list --disabled
@@ -193,6 +241,48 @@ begin
 
   result += ' ' + C_PMS_OPT_REPOSEARCH_OPT_URLS;
 
+end;
+
+class function TCustomPackageManager.GetWrappedKerListCommand(const GetAsJson: boolean): TCommandLineDef;
+var l: integer;
+begin
+  result.CurDir := '/';
+  Result.Cmd    := 'macaronictl';
+  Result.Params := ['kernel', 'list'];
+
+  if GetAsJson then begin
+     l:=Length(Result.Params);
+     SetLength(Result.Params, l+1);
+     Result.Params[l] := '--json';
+  end;
+end;
+
+class function TCustomPackageManager.GetWrappedKerAvailCommand(const GetAsJson: boolean): TCommandLineDef;
+var l: integer;
+begin
+  result.CurDir := '/';
+  Result.Cmd    := 'macaronictl';
+  Result.Params := ['kernel', 'available'];
+
+  if GetAsJson then begin
+     l:=Length(Result.Params);
+     SetLength(Result.Params, l+1);
+     Result.Params[l] := '--json';
+  end;
+end;
+
+class function TCustomPackageManager.GetWrappedKerProfileCommand(const GetAsJson: boolean): TCommandLineDef;
+var l: integer;
+begin
+  result.CurDir := '/';
+  Result.Cmd    := 'macaronictl';
+  Result.Params := ['kernel', 'profiles'];
+
+  if GetAsJson then begin
+     l:=Length(Result.Params);
+     SetLength(Result.Params, l+1);
+     Result.Params[l] := '--json';
+  end;
 end;
 
 

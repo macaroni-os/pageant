@@ -473,9 +473,9 @@ object fmAbout: TfmAbout
     ParentFont = False
   end
   object Label2: TLabel
-    Left = 20
+    Left = 24
     Height = 16
-    Top = 168
+    Top = 184
     Width = 400
     Alignment = taCenter
     AutoSize = False
@@ -485,9 +485,9 @@ object fmAbout: TfmAbout
     ParentFont = False
   end
   object Label3: TLabel
-    Left = 20
+    Left = 24
     Height = 15
-    Top = 184
+    Top = 200
     Width = 400
     Alignment = taCenter
     AutoSize = False
@@ -497,9 +497,9 @@ object fmAbout: TfmAbout
     ParentFont = False
   end
   object Label4: TLabel
-    Left = 20
+    Left = 24
     Height = 48
-    Top = 232
+    Top = 248
     Width = 145
     Caption = 'Credits:'#10'Lazarus and Free Pascal'#10'VirtualTreeView'
     ParentColor = False
@@ -512,5 +512,17 @@ object fmAbout: TfmAbout
     Caption = 'Close'
     ModalResult = 11
     TabOrder = 0
+  end
+  object lbVersion: TLabel
+    Left = 24
+    Height = 16
+    Top = 152
+    Width = 400
+    Alignment = taCenter
+    AutoSize = False
+    Caption = 'Version 0.0.0'
+    Font.Style = [fsBold]
+    ParentColor = False
+    ParentFont = False
   end
 end

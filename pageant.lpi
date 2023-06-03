@@ -18,8 +18,8 @@
     </General>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
-      <MinorVersionNr Value="5"/>
-      <StringTable CompanyName="macaroni-os" InternalName="PAGeant"/>
+      <RevisionNr Value="6"/>
+      <StringTable CompanyName="macaroni-os" InternalName="PAGeant" ProductVersion="0.0.6_alpha"/>
     </VersionInfo>
     <BuildModes Count="3">
       <Item1 Name="Default" Default="True"/>

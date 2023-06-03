@@ -1,0 +1,11 @@
+History
+
+2023-06-03   Rel 0.0.6 alpha
+             Fix semantic version convention with three numbers
+             Fixed inverted kernel columns: type and released
+2023-05-20   Rel 0.0.5 alpha
+             wrapped command macaronictl kernel list|available|profiles
+2023-05-17   Added PAGeant version
+2023-05-15   New Feature: search in repositories
+             Fixed columns length in vstRepo (repository grid)
+             Fixed change of tab: from repository to package, the card did not move

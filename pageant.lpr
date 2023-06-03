@@ -17,6 +17,16 @@ uses
 
 begin
   RequireDerivedFormResource:=True;
+
+  if ParamCount > 0 then
+     if LowerCase(ParamStr(1)) = '--version' then begin
+        Writeln( FileVerInfo.VersionStrings.Values['InternalName'] +
+                 ' Version: ' +
+                 FileVerInfo.VersionStrings.Values['ProductVersion']
+        );
+        exit;
+     end;
+
   Application.Scaled:=True;
   Application.Initialize;
   Application.CreateForm(TdmMain, dmMain);

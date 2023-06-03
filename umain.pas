@@ -13,8 +13,6 @@ uses
   , FileInfo
   ;
 
-const __PAGEANT_VER_SUFFIX = ' alpha';
-
 
 type
 
@@ -163,7 +161,7 @@ type
     procedure vstRepoNodeClick(Sender: TBaseVirtualTree; const HitInfo: THitInfo
       );
   private
-    FileVerInfo: TFileVersionInfo;
+    // FileVerInfo: TFileVersionInfo;
     FPackages: TJSONArray;
     FRepositories: TJSONArray;
     FKernelList,
@@ -209,6 +207,7 @@ type
 
 var
   fmMain: TfmMain;
+  FileVerInfo: TFileVersionInfo;
 
 implementation
 
@@ -382,14 +381,14 @@ begin
     FKernelAvail:=nil;
     FKernelProfile:=nil;
 
-  FileVerInfo:=TFileVersionInfo.Create(nil);
+  // FileVerInfo:=TFileVersionInfo.Create(nil);
 
   // get pageant version
-  FileVerInfo.ReadFileInfo;
+  // FileVerInfo.ReadFileInfo;
   s:= Format('%s Version: %s',
                      [ FileVerInfo.VersionStrings.Values['InternalName'],
-                       FileVerInfo.VersionStrings.Values['FileVersion']
-                     ]) + __PAGEANT_VER_SUFFIX;
+                       FileVerInfo.VersionStrings.Values['ProductVersion']
+                     ]);
   // LogInfo(Format('Start %s Company: %s Version:%s',[ FileVerInfo.VersionStrings.Values['InternalName']   , FileVerInfo.VersionStrings.Values['CompanyName']   , FileVerInfo.VersionStrings.Values['FileVersion']  ]));
   WriteLn(s);
 
@@ -404,7 +403,7 @@ end;
 
 procedure TfmMain.FormDestroy(Sender: TObject);
 begin
-  FileVerInfo.Free;
+  // FileVerInfo.Free;
 
   // free resoruces
   FreeAndNil(FPackages);
@@ -448,7 +447,7 @@ procedure TfmMain.Label6Click(Sender: TObject);
 begin
    with TfmAbout.Create(self) do
       try
-        lbVersion.Caption:=FileVerInfo.VersionStrings.Values['FileVersion'] + __PAGEANT_VER_SUFFIX;
+        lbVersion.Caption:=FileVerInfo.VersionStrings.Values['ProductVersion'];
         ShowModal;
       finally
         Free;
@@ -581,8 +580,8 @@ begin
     3: CellText := Data^.Repository;
     4: CellText := Data^.EOL;
     5: CellText := BoolToStr(Data^.IsLTS, 'LTS', '');
-    7: CellText := Data^.Released;
-    6: CellText := Data^.KerType;
+    6: CellText := Data^.Released;
+    7: CellText := Data^.KerType;
   end;
 end;
 
@@ -1525,6 +1524,18 @@ begin
   lboxHistory.Items.Insert(0, AValue);
   Application.ProcessMessages;;
 end;
+
+
+initialization
+
+  FileVerInfo:=TFileVersionInfo.Create(nil);
+
+  // get pageant version
+  FileVerInfo.ReadFileInfo;
+
+finalization
+
+  FileVerInfo.Free;
 
 end.
 

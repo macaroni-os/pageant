@@ -162,6 +162,8 @@ type
       );
   private
     // FileVerInfo: TFileVersionInfo;
+    FPkgInstalled: TPkgInstalled;
+
     FPackages: TJSONArray;
     FRepositories: TJSONArray;
     FKernelList,
@@ -172,6 +174,7 @@ type
     procedure SetStatusPanel_ItemsCount(AValue: integer);
     procedure SetStatusPanel_SumOf_Size(AValue: integer);
 
+    procedure StoreInstalledPackages(const APackagesList: TJSONArray);
     procedure PopulateGrid(const APackagesList: TJSONArray);
     procedure DoPopulateGridAsList(const APackagesList: TJSONArray);
     procedure DoPopulateGridAsGroupByCat(const APackagesList: TJSONArray);
@@ -189,6 +192,7 @@ type
     property Repositories: TJSONArray read FRepositories write FRepositories;
     property ViewMode: TViewMode read FViewMode write SetViewMode;
   public
+     procedure LoadInstalledPackages;
      procedure SearchPackages(const AValueToSearch: string);
      procedure SearchRepositoryes(const AType: TRepositorySearchMode = rsmAll);
      procedure InspectPackage(const APackageName: string);
@@ -375,6 +379,8 @@ begin
   end;
 
   // allocate resources
+  FPkgInstalled:=TPkgInstalled.Create;
+
   FPackages:=nil;
   FRepositories:=nil;
   FKernelList:=nil;
@@ -397,6 +403,8 @@ begin
      MessageDlg('PAGeant', 'You are running PAGeant without administrator rights.' + LineEnding +
                            'In this case, not all functionality will be accessible!',
                            mtWarning, [mbOK], '');
+  end else begin
+      LoadInstalledPackages;
   end;
 
 end;
@@ -406,6 +414,7 @@ begin
   // FileVerInfo.Free;
 
   // free resoruces
+  FreeAndNil(FPkgInstalled);
   FreeAndNil(FPackages);
   vst.Clear;
 
@@ -519,6 +528,8 @@ end;
 procedure TfmMain.vstGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
   Column: TColumnIndex; TextType: TVSTTextType; var CellText: String);
 var Data: PPackageItemData;
+    PkgInstData: TPackageItemData;
+    s: string;
 begin
   Data := VST.GetNodeData(Node);
   case Column of
@@ -527,8 +538,20 @@ begin
     2: CellText := Data^.PackageName;
     3: CellText := Data^.Version;
     4: CellText := Data^.License;
-    5: CellText := // Data^.DownloadSize.ToString;
-                   Format('%8.2n', [( Data^.DownloadSize / 1048576 )]);
+    5: // CellText := // Data^.DownloadSize.ToString;
+       //             // Format('%8.2n', [( Data^.DownloadSize / 1048576 )]);
+       if FPkgInstalled.Count = 0 then begin
+          CellText := 'not available';
+       end else begin
+          s:=Data^.PackageName;
+          if FPkgInstalled.TryGetData(s, PkgInstData) then begin
+             s:=TPackageItemData(FPkgInstalled[s]).Version;
+          end else begin
+             s:='';
+          end;
+          CellText := s;
+       end;
+
   end;
 end;
 
@@ -768,6 +791,44 @@ begin
      s:= Format('Total size: %8.2n MB', [( AValue / 1048576 )]);
   StatusBar1.Panels[2].Text := s;
   Application.ProcessMessages;
+end;
+
+procedure TfmMain.StoreInstalledPackages(const APackagesList: TJSONArray);
+var je: TJSONEnum;
+    ji: TJSONObject;
+    js: TJSONString;
+    s: string;
+    XNode: PVirtualNode;
+    RecData: TPackageItemData;
+begin
+  FPkgInstalled.Clear;
+
+  for je in APackagesList do begin
+      ji:=je.Value as TJSONObject;
+
+      s:=ji.Strings['name'];
+      RecData.PackageName := s;
+
+      s:=ji.Strings['category'];
+      RecData.Category := s;
+
+      s:=ji.Strings['version'];
+      RecData.Version := s;
+
+      if ji.Find('license', js) then begin
+         RecData.License := js.AsString;
+      end;
+
+
+      s:=ji.Strings['repository'];
+      RecData.Repository := s;
+
+      RecData.DownloadSize := 0;
+
+      FPkgInstalled.Add(RecData.PackageName, RecData);
+      lboxHistory.Items.Add(RecData.PackageName);
+
+  end;
 end;
 
 procedure TfmMain.PopulateGrid(const APackagesList: TJSONArray);
@@ -1118,6 +1179,57 @@ begin
        lbViewAsTree.Font.Style:=[fsBold];
        lbViewAsTree.Font.Color:= $00D6D6D6;
     end;
+  end;
+
+end;
+
+procedure TfmMain.LoadInstalledPackages;
+var ja: TJSONArray;
+    jo: TJSONObject;
+    sOut:string;
+    LuetWrap: TCustomPackageManager;
+begin
+
+  LuetWrap:=TCustomPackageManager.Create;
+  try
+
+    // - - - - - - - - - - - - - - - -
+    // init
+    // - - - - - - - - - - - - - - - -
+    ja:=nil;
+    vst.Clear;
+    StatusPanel_FormStatus:='luet is searching...';
+    Application.ProcessMessages;
+
+    LuetWrap.IsSearchInstalled:=True;
+    LuetWrap.SearchMode:=TSearchMode(0);
+
+    if pnHistory.Visible then
+       SendHistoryPanel( LuetWrap.GetWrappedCommand('', True) );
+
+    sOut := LuetWrap.Search('');
+
+    // - - - - - - - - - - - - - - - -
+    // process results
+    // - - - - - - - - - - - - - - - -
+    StatusPanel_FormStatus:='Elaboration...';
+    Application.ProcessMessages;
+
+    jo := GetJSON(sOut) as TJSONObject;
+    ja := jo.Extract('stones') as TJSONArray;
+
+    if not Assigned(ja) then begin
+       MessageDlg('Error', 'search failed!', mtError, [mbOk], 0);
+       exit;
+    end;
+
+    StoreInstalledPackages(ja);
+    PopulateGrid(ja);
+
+  finally
+    FreeAndNil(LuetWrap);
+    FreeAndNil(ja);
+    FreeAndNil(jo);
   end;
 
 end;

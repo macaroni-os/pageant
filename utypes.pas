@@ -5,7 +5,7 @@ unit utypes;
 interface
 
 uses
-  Classes, SysUtils, jsonscanner;
+  Classes, SysUtils, jsonscanner, fgl;
 
 
 type
@@ -30,7 +30,7 @@ TPackageList= array of TPackageItemData;
 
 TSearchMode = (smSearchByName, smMatchName, smMatchCatetoryAndName, smMatchLabels);
 
-
+TPkgInstalled = specialize TFPGMap<string, TPackageItemData>;
 
 { TRepositoryItemData }
 
@@ -133,7 +133,7 @@ end;
 
 { PackageDetailOptions }
 
-TPackageDetailOptions = record // Class(TObject)
+TPackageDetailOptions = record
   FOptions : TJSONOptions;
   FQuoteStrings,
   FSortObjectMembers,

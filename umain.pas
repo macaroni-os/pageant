@@ -5,13 +5,13 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls,
-  ComCtrls, Buttons, ActnList, Menus, VirtualTrees, SynEdit,
+  ComCtrls, Buttons, ActnList, Menus, ValEdit, VirtualTrees, SynEdit,
   synhighlighterunixshellscript
   // ,VirtualStringTree
   , fpjson
   , utypes
   , FileInfo
-  ;
+  , Types;
 
 
 type
@@ -51,20 +51,24 @@ type
     Label5: TLabel;
     Label6: TLabel;
     Label7: TLabel;
+    lbUri: TLabel;
+    lbDescription: TLabel;
+    lboxHistory: TListBox;
     lbSystemKernelName: TStaticText;
     lbViewAsList: TLabel;
     Label4: TLabel;
     lbViewAsTree: TLabel;
-    lboxHistory: TListBox;
     listUrls: TListBox;
     Memo1: TMemo;
     MenuItem1: TMenuItem;
     miHistoryCopy: TMenuItem;
     PageControl1: TPageControl;
+    PageControl2: TPageControl;
     Panel1: TPanel;
     Panel2: TPanel;
     Panel3: TPanel;
     Panel4: TPanel;
+    pnDescription: TPanel;
     pnKernelAvailable: TPanel;
     pnKernelInstallable: TPanel;
     pnKernelProfile: TPanel;
@@ -73,16 +77,21 @@ type
     pnSearchOtions: TPanel;
     pnBody: TPanel;
     pnMacroMenu: TPanel;
-    pnHistory: TPanel;
+    pnDetail: TPanel;
     pmItems: TPopupMenu;
     pmHistory: TPopupMenu;
+    sbDetail: TScrollBox;
     Splitter1: TSplitter;
     lbSystemHostName: TStaticText;
     StaticText1: TStaticText;
     StaticText2: TStaticText;
     StaticText3: TStaticText;
     StaticText4: TStaticText;
+    lbUriCaption: TStaticText;
+    lbDescriptionCaption: TStaticText;
     StatusBar1: TStatusBar;
+    tsDetail: TTabSheet;
+    tsHist: TTabSheet;
     tsRepository: TTabSheet;
     tsKernel: TTabSheet;
     tsDebug: TTabSheet;
@@ -109,11 +118,11 @@ type
     procedure Button4Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure Image1Click(Sender: TObject);
     procedure Label2Click(Sender: TObject);
     procedure Label4Click(Sender: TObject);
     procedure Label5Click(Sender: TObject);
     procedure Label6Click(Sender: TObject);
+    procedure lbUriClick(Sender: TObject);
     procedure lbViewAsListClick(Sender: TObject);
     procedure lbViewAsTreeClick(Sender: TObject);
     procedure lbViewAsTreeMouseEnter(Sender: TObject);
@@ -151,6 +160,7 @@ type
     procedure vstKerProfileGetText(Sender: TBaseVirtualTree;
       Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
       var CellText: String);
+    procedure vstNodeClick(Sender: TBaseVirtualTree; const HitInfo: THitInfo);
     procedure vstRepoChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure vstRepoFocusChanged(Sender: TBaseVirtualTree; Node: PVirtualNode;
       Column: TColumnIndex);
@@ -175,8 +185,9 @@ type
     procedure SetStatusPanel_SumOf_Size(AValue: integer);
 
     procedure StoreInstalledPackages(const APackagesList: TJSONArray);
-    procedure PopulateGrid(const APackagesList: TJSONArray);
+    procedure PopulateGrid(const APackagesList: TJSONArray; const UseArtifacts: boolean = false);
     procedure DoPopulateGridAsList(const APackagesList: TJSONArray);
+    procedure DoPopulateGridAsListArtifacts(const APackagesList: TJSONArray);
     procedure DoPopulateGridAsGroupByCat(const APackagesList: TJSONArray);
 
     procedure DoPopulateRepoGridAsList(const ARepositoriesList: TJSONArray);
@@ -186,6 +197,8 @@ type
 
 
     procedure SetViewMode(AValue: TViewMode);
+    procedure AutoShowDetails;
+    procedure SetViewDetails(const DetailIsVisible: boolean);
 
   private
     property Packages: TJSONArray read FPackages write FPackages;
@@ -194,8 +207,10 @@ type
   public
      procedure LoadInstalledPackages;
      procedure SearchPackages(const AValueToSearch: string);
+     procedure SearchPackagesArtifacts(const AValueToSearch: string);
      procedure SearchRepositoryes(const AType: TRepositorySearchMode = rsmAll);
      procedure InspectPackage(const APackageName: string);
+     function GetFullPackageInfo(const APackageName: string): string;
      procedure SearchKernelList;
      procedure SearchKernelAvailable;
      procedure SearchKernelProfiles;
@@ -217,7 +232,7 @@ implementation
 
 {$R *.lfm}
 
-uses ucustompackagemanager, upackagedetails_fm, uabout_fm, Clipbrd, StrUtils;
+uses ucustompackagemanager, upackagedetails_fm, uabout_fm, Clipbrd, StrUtils, lclintf;
 
 { TfmMain }
 
@@ -301,7 +316,7 @@ begin
     self.Cursor:=crAppStart;
     StatusPanel_ItemsCount:=-1;
     StatusPanel_SumOf_Size:=-1;
-    SearchPackages(edTextToSearch.Text);
+    SearchPackagesArtifacts(edTextToSearch.Text);
   finally
     self.Cursor:=crDefault;
     StatusPanel_FormStatus:='Ready';
@@ -373,6 +388,7 @@ begin
   // init
   StatusPanel_FormStatus:='Ready';
   ViewMode:=vmList;
+  SetViewDetails(False);
   with TCustomPackageManager.GetSystemInfo do begin
       lbSystemHostName.Caption := HostName;
       lbSystemKernelName.Caption := KernelName;
@@ -404,7 +420,8 @@ begin
                            'In this case, not all functionality will be accessible!',
                            mtWarning, [mbOK], '');
   end else begin
-      LoadInstalledPackages;
+     // ShowMessage('LoadInstalledPackages disabled');
+     LoadInstalledPackages;
   end;
 
 end;
@@ -431,10 +448,6 @@ begin
 
 end;
 
-procedure TfmMain.Image1Click(Sender: TObject);
-begin
-
-end;
 
 procedure TfmMain.Label2Click(Sender: TObject);
 begin
@@ -461,6 +474,12 @@ begin
       finally
         Free;
       end;
+end;
+
+procedure TfmMain.lbUriClick(Sender: TObject);
+begin
+  if not OpenURL(lbUri.Caption) then
+     MessageDlg('Unable to open ' + lbUri.Caption + ' site.', mtInformation, [mbOK], 0);
 end;
 
 procedure TfmMain.lbViewAsListClick(Sender: TObject);
@@ -516,6 +535,10 @@ begin
     // Architecture: string;
     Data^.Installedsize:=0;
     Data^.DownloadSize := 0;
+
+    Data^.Description:='';
+    Data^.Uri:='';
+    Data^.Sha256:='';
   end;
 end;
 
@@ -703,6 +726,20 @@ begin
   end;
 end;
 
+procedure TfmMain.vstNodeClick(Sender: TBaseVirtualTree; const HitInfo: THitInfo);
+var Data: PPackageItemData;
+begin
+   Data := vst.GetNodeData(HitInfo.HitNode);
+   lbDescription.Caption:=Data^.Description; // .Replace(' ', #10, [rfReplaceAll]);
+
+   // lboxUri.Clear;
+   // lboxUri.Items.Text:=Data^.Uri.Replace('|', #10, [rfReplaceAll]);
+   lbUri.Caption:=ExtractWord(1, Data^.Uri, ['|', #10]);
+
+   AutoShowDetails;
+
+end;
+
 procedure TfmMain.vstRepoChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
 begin
   vstRepo.Refresh;
@@ -831,16 +868,24 @@ begin
   end;
 end;
 
-procedure TfmMain.PopulateGrid(const APackagesList: TJSONArray);
+procedure TfmMain.PopulateGrid(const APackagesList: TJSONArray; const UseArtifacts: boolean);
 begin
   vst.Clear;
 
-  if not Assigned(Packages) then
+  if not Assigned(APackagesList) then
      exit;
 
-  case ViewMode of
-    vmList: DoPopulateGridAsList(APackagesList);
-    vmTree: DoPopulateGridAsGroupByCat(APackagesList);
+  if UseArtifacts then begin
+     case ViewMode of
+       vmList: DoPopulateGridAsListArtifacts(APackagesList);
+       vmTree: // DoPopulateGridAsGroupByCat(APackagesList);
+               DoPopulateGridAsListArtifacts(APackagesList)
+     end
+  end else begin
+     case ViewMode of
+       vmList: DoPopulateGridAsList(APackagesList);
+       vmTree: DoPopulateGridAsGroupByCat(APackagesList);
+     end;
   end;
 end;
 
@@ -883,6 +928,77 @@ begin
         Data^.Repository := s;
 
         Data^.DownloadSize := 0;
+
+     end;
+
+  end;
+end;
+
+procedure TfmMain.DoPopulateGridAsListArtifacts(const APackagesList: TJSONArray);
+var je, jeu: TJSONEnum;
+    ji, joArtifact: TJSONObject;
+    js: TJSONString;
+    ja: TJSONArray;
+    s, s1: string;
+    XNode: PVirtualNode;
+    Data: PPackageItemData;
+begin
+  // Update gui
+  StatusPanel_ItemsCount:=APackagesList.Count;
+  StatusPanel_SumOf_Size:=0;
+
+  for je in APackagesList do begin
+      joArtifact:=je.Value as TJSONObject;
+
+      XNode := VST.AddChild(nil);
+      // if VST.AbsoluteIndex(XNode) > -1 then
+      if Assigned(XNode) then begin
+
+        Data := VST.GetNodeData(Xnode);
+
+        ji:=joArtifact.Objects['runtime'];
+
+        s:=ji.Strings['name'];
+        Data^.PackageName := s;
+
+        s:=ji.Strings['category'];
+        Data^.Category := s;
+
+        s:=ji.Strings['version'];
+        Data^.Version := s;
+
+        if ji.Find('license', js) then begin
+           Data^.License := js.AsString;
+        end;
+
+        s:=ji.Strings['repository'];
+        Data^.Repository := s;
+
+        Data^.DownloadSize := 0;
+
+        // read additional data
+        if ji.Find('description', js) then begin
+           Data^.Description := js.AsString;
+        end;
+
+        // uri
+        if ji.Find('uri', ja) then begin
+           ja:=ji.Arrays['uri'];
+           s:='';
+           for jeu in ja do begin
+               if s <> '' then
+                  s += '|';
+               s1:=jeu.Value .AsString;
+               s+=s1;
+           end;
+           Data^.Uri := s;
+        end;
+
+        // checksum
+        ji:=joArtifact.Objects['checksums'];
+        if ji.Find('sha256', js) then begin
+           Data^.Sha256 := js.AsString;
+        end;
 
      end;
 
@@ -1183,6 +1299,43 @@ begin
 
 end;
 
+procedure TfmMain.AutoShowDetails;
+begin
+
+  SetViewDetails( (lbDescription.Caption <>'')
+                  or
+                  (lbUri.Caption <> '') );
+
+end;
+
+procedure TfmMain.SetViewDetails(const DetailIsVisible: boolean);
+begin
+  if DetailIsVisible then begin
+     lbUriCaption.Caption:='Site / Info';
+     lbDescriptionCaption.Caption:='Description';
+     if not tsDetail.TabVisible then begin
+        tsDetail.TabVisible:=True;
+        PageControl2.ActivePage:=tsDetail;
+
+        // calculate height
+        sbDetail.VertScrollBar.Range:=lbUriCaption.Height +
+                                      // lboxUri.Height +
+                                      lbUri.Height +
+                                      lbDescriptionCaption.Height +
+                                      lbDescription.Height;
+
+        // Caption:=sbDetail.VertScrollBar.Range.ToString;
+        sbDetail.VertScrollBar.Visible:=sbDetail.VertScrollBar.Range > tsDetail.Height;
+
+     end;
+  end else begin
+     lbUriCaption.Caption:='';
+     lbUri.Caption:='';
+     lbDescriptionCaption.Caption:='';
+     lbDescription.Caption:='';
+  end;
+end;
+
 procedure TfmMain.LoadInstalledPackages;
 var ja: TJSONArray;
     jo: TJSONObject;
@@ -1204,7 +1357,7 @@ begin
     LuetWrap.IsSearchInstalled:=True;
     LuetWrap.SearchMode:=TSearchMode(0);
 
-    if pnHistory.Visible then
+    if pnDetail.Visible then
        SendHistoryPanel( LuetWrap.GetWrappedCommand('', True) );
 
     sOut := LuetWrap.Search('');
@@ -1259,7 +1412,7 @@ begin
     LuetWrap.IsSearchInstalled:=cbSearchInstalled.Checked;
     LuetWrap.SearchMode:=TSearchMode( cbSearchLocation.ItemIndex );
 
-    if pnHistory.Visible then
+    if pnDetail.Visible then
        SendHistoryPanel( LuetWrap.GetWrappedCommand(AValueToSearch, True) );
 
     sOut := LuetWrap.Search(AValueToSearch);
@@ -1281,6 +1434,61 @@ begin
     PopulateGrid(Packages);
 
   finally
+    FreeAndNil(LuetWrap);
+    FreeAndNil(jo);
+  end;
+
+end;
+
+procedure TfmMain.SearchPackagesArtifacts(const AValueToSearch: string);
+var jo: TJSONObject;
+    sOut:string;
+    LuetWrap: TCustomPackageManager;
+    Pkgs: TJSONArray;
+begin
+
+  LuetWrap:=TCustomPackageManager.Create;
+  try
+
+    // - - - - - - - - - - - - - - - -
+    // init
+    // - - - - - - - - - - - - - - - -
+    vst.Clear;
+    StatusPanel_FormStatus:='luet is searching...';
+    Application.ProcessMessages;
+
+    // - - - - - - - - - - - - - - - -
+    // search
+    // - - - - - - - - - - - - - - - -
+
+    LuetWrap.IsSearchInstalled:=cbSearchInstalled.Checked;
+    LuetWrap.UseArtifacts:=True;
+    LuetWrap.SearchMode:=TSearchMode( cbSearchLocation.ItemIndex );
+
+    if pnDetail.Visible then
+       SendHistoryPanel( LuetWrap.GetWrappedCommand(AValueToSearch, True) );
+
+    sOut := LuetWrap.Search(AValueToSearch);
+
+    // - - - - - - - - - - - - - - - -
+    // process results
+    // - - - - - - - - - - - - - - - -
+    StatusPanel_FormStatus:='Elaboration...';
+    Application.ProcessMessages;
+
+    jo := GetJSON(sOut) as TJSONObject;
+    Pkgs := jo.Extract('artifacts') as TJSONArray;
+
+    if not Assigned(Pkgs) then begin
+       MessageDlg('Error', 'search failed!', mtError, [mbOk], 0);
+       exit;
+    end;
+
+    PopulateGrid(Pkgs, True);
+
+  finally
+    if Assigned(Pkgs) then
+       FreeAndNil(Pkgs);
     FreeAndNil(LuetWrap);
     FreeAndNil(jo);
   end;
@@ -1313,12 +1521,12 @@ begin
     if Assigned(FRepositories) then
        FreeAndNil(FRepositories);
 
-    if pnHistory.Visible then
+    if pnDetail.Visible then
        SendHistoryPanel( LuetWrap.GetWrappedRepoCommand(AType) );
 
     FRepositories := TJSONArray.Create;
 
-    // if pnHistory.Visible then
+    // if pnDetail.Visible then
     //    SendHistoryPanel( LuetWrap.GetWrappedRepoCommand(AType) );
 
     sOut := LuetWrap.SearchRepositories(AType);
@@ -1410,28 +1618,79 @@ begin
 end;
 
 procedure TfmMain.InspectPackage(const APackageName: string);
-var ji: TJSONObject;
+var ji, jo: TJSONObject;
     je: TJSONEnum;
+    ja: TJSONArray;
+    s: string;
 begin
   // - - - - - - - - - - - - - - - -
   // search package
   // - - - - - - - - - - - - - - - -
   ji:=nil;
-  for je in Packages do begin
-      if TJSONObject(je.Value).Strings['name'] = APackageName then begin
-         ji:=je.Value as TJSONObject;
-         break;
-      end;
+
+  // if present in PAckages... (obsolete)
+  if Assigned(Packages) then
+     for je in Packages do begin
+         if TJSONObject(je.Value).Strings['name'] = APackageName then begin
+            ji:=je.Value as TJSONObject;
+            break;
+         end;
+     end;
+
+
+  // load from artifacts
+  if not Assigned(Packages) then begin
+     s:=GetFullPackageInfo(APackageName);
+     if s <> '' then
+        try
+          jo :=GetJSON(s) as TJSONObject;
+          if jo.Find('artifacts', ja) then begin
+             ji := ja.Extract(0) as TJSONObject;
+          end;
+        finally
+          FreeAndNil(jo);
+        end;
   end;
 
+
   // - - - - - - - - - - - - - - - -
-  // search package
+  // show package info
   // - - - - - - - - - - - - - - - -
-  with TfmPackageDetails.Create(self) do begin
-       Title:=APackageName;
-       // AnimationImageList:=Images;
-       PackageDetails:=ji;
-       Show;
+  if Assigned(ji) then begin
+     with TfmPackageDetails.Create(self) do begin
+          Title:=APackageName;
+          // AnimationImageList:=Images;
+          PackageDetails:=ji;
+          Show;
+     end;
+  end else begin
+     MessageDlg('Unable to inspect package.', mtWarning, [mbOk], 0);
+  end;
+
+end;
+
+function TfmMain.GetFullPackageInfo(const APackageName: string): string;
+var LuetWrap: TCustomPackageManager;
+begin
+
+  LuetWrap:=TCustomPackageManager.Create;
+  try
+
+    // - - - - - - - - - - - - - - - -
+    // search
+    // - - - - - - - - - - - - - - - -
+
+    LuetWrap.IsSearchInstalled:=False;
+    LuetWrap.UseArtifacts:=True;
+    LuetWrap.SearchMode:=smSearchByName;
+
+    if pnDetail.Visible then
+       SendHistoryPanel( LuetWrap.GetWrappedCommand(APackageName, True) );
+
+    Result := LuetWrap.Search(APackageName);
+
+  finally
+    FreeAndNil(LuetWrap);
   end;
 
 end;
@@ -1455,9 +1714,9 @@ begin
     if Assigned(FKernelList) then
        FreeAndNil(FKernelList);
 
-    // if pnHistory.Visible then
+    // if pnDetail.Visible then
     //    SendHistoryPanel( TCustomPackageManager.GetWrappedKerListCommand );
-    if pnHistory.Visible then begin
+    if pnDetail.Visible then begin
        cmd:=TCustomPackageManager.GetWrappedKerListCommand(False);
        s:=cmd.Cmd + ' ' + ArrayOfStringToString(cmd.Params);
        SendHistoryPanel( s );
@@ -1506,7 +1765,7 @@ begin
     if Assigned(FKernelAvail) then
        FreeAndNil(FKernelAvail);
 
-    if pnHistory.Visible then begin
+    if pnDetail.Visible then begin
        cmd:=TCustomPackageManager.GetWrappedKerAvailCommand(False);
        s:=cmd.Cmd + ' ' + ArrayOfStringToString(cmd.Params);
        SendHistoryPanel( s );
@@ -1554,7 +1813,7 @@ begin
     if Assigned(FKernelProfile) then
        FreeAndNil(FKernelProfile);
 
-    if pnHistory.Visible then begin
+    if pnDetail.Visible then begin
        cmd:=TCustomPackageManager.GetWrappedKerProfileCommand(False);
        s:=cmd.Cmd + ' ' + ArrayOfStringToString(cmd.Params);
        SendHistoryPanel( s );

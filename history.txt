@@ -1,5 +1,12 @@
 History
 
+2023-07-02   Rel 0.0.8 alpha
+             Inspect package rewritten using --artifacts
+             Detail page: now package list is retrieved using --artifacts to show description and uri
+             (this will be improved in speed)
+             Show package web page in default browser
+2023-06-10   Rel 0.0.7 alpha
+             Show installed package version
 2023-06-03   Rel 0.0.6 alpha
              Fix semantic version convention with three numbers
              Fixed inverted kernel columns: type and released

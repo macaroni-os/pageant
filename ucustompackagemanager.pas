@@ -16,6 +16,7 @@ type
   private
     FIsSearchInstalled: boolean;
     FSearchMode: TSearchMode;
+    FUseArtifacts: boolean;
   public
     class function IsRunningAsSudo: boolean;
     class function GetSystemInfo: TSystemInfo; virtual;
@@ -39,6 +40,7 @@ type
   public
     property IsSearchInstalled: boolean read FIsSearchInstalled write FIsSearchInstalled;
     property SearchMode: TSearchMode read FSearchMode write FSearchMode;
+    property UseArtifacts: boolean read FUseArtifacts write FUseArtifacts;
   end;
 
 
@@ -57,6 +59,7 @@ const
   C_PMS_OPT_INSTALLED = '--installed';
   C_PMS_OPT_SEARCHMODE_NAME = '-n';
   C_PMS_OPT_SEARCHMODE_CATN = '-p';
+  C_PMS_OPT_ARTIFACTS = '--artifacts';
 
   C_PMS_OPT_REPOSEARCH = 'repo list';
   C_PMS_OPT_REPOSEARCH_OPT_ENABLED = '--enabled';
@@ -164,6 +167,9 @@ begin
 
   if IsSearchInstalled then
      result += ' ' + C_PMS_OPT_INSTALLED;
+
+  if UseArtifacts then
+     result += ' ' + C_PMS_OPT_ARTIFACTS;
 
 end;
 
@@ -292,6 +298,7 @@ begin
 
   FIsSearchInstalled:=False;
   SearchMode:= smSearchByName;
+  FUseArtifacts:=False;
 end;
 
 

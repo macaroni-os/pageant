@@ -274,6 +274,7 @@ end;
 destructor TfmPackageDetails.Destroy;
 begin
   FreeAndNil(FBeautifyer);
+  FreeAndNil(FPackageDetails);
 
   inherited Destroy;
 end;

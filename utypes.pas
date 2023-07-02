@@ -22,6 +22,10 @@ TPackageItemData = record
   // Architecture: string;
   Installedsize: Int64;
   DownloadSize: Int64;
+
+  Description: string;
+  Uri: string;
+  Sha256: string;
 end;
 
 PPackageItemData = ^TPackageItemData;

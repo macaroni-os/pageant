@@ -18,12 +18,11 @@ the binutils:
 
 ```shell
 
-$> luet i elt-patches patch autoconf-archive gcc-config
-  diffutils binutils binutils-libs binutils-config
-  which make portage lazarus fpc
+$> anise i elt-patches patch autoconf-archive gcc-config
+  diffutils binutils binutils-libs which make portage lazarus fpc
 ...
 
-$> gcc-config 1 && binutils-config 1 && source /etc/profile
+$> gcc-config 1 && source /etc/profile
 
 $> eselect gcc set 1 && macaronictl env-update
 
